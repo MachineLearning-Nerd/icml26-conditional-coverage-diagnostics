@@ -25,3 +25,7 @@ Claims 1, 4, and 6 have deterministic independent foundation checks in
 `repro/src/verify_ert_foundations.py`; their raw result is intentionally kept
 separate from the pending full-scale benchmark and synthetic evidence. The
 publication gate still requires at least two further source-anchored claims.
+`repro/src/audit_publication_gate.py` is fail-closed: it requires the complete
+eight-dataset integrity manifest, the ten-seed synthetic aggregate, and at
+least five separately evidenced claims before it can write a local eligibility
+record. It does not itself publish anything.
