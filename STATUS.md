@@ -160,6 +160,14 @@ waits for the resulting Diamonds aggregate, then runs the remaining six
 Appendix-H datasets one seed at a time, auditing and strictly aggregating each
 dataset before advancing. It also does not publish or create a claim.
 
+Queue integrity hardening: the legacy Diamonds seed 0 result has the correct
+protocol and ten-size data but predates persisted coverage digest recording.
+A fourth detached, non-overlapping repair waits for the six-dataset Appendix-H
+queue to finish, preserves that legacy checkpoint, reruns only seed 0 with the
+current source-faithful runner, and requires integrity checks on all ten
+Diamonds seeds before replacing the strict aggregate. This repair is evidence
+hardening only and does not create a claim.
+
 Update 2026-07-28 (queue hardening): the full-scale runner now resumes an
 incomplete atomic result instead of treating its existence as completion. It
 recomputes and verifies the pinned split/model coverage contract first, retains
