@@ -1,0 +1,10 @@
+.venv/
+outputs/
+artifacts/
+data/
+upstream/**/data/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.trackio/logbook/
+upstream/
