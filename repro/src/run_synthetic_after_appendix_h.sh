@@ -18,6 +18,6 @@ fi
 
 for seed in {0..9}; do
   uv run --with numpy --with pandas --with scipy --with scikit-learn --with torch \
-    --with lightgbm --with probmetrics --with numba \
+    --with lightgbm --with catboost --with pytabkit --with probmetrics --with numba --with tqdm \
     python repro/src/run_synthetic_convergence.py "$seed" --output-dir outputs/synthetic
 done
