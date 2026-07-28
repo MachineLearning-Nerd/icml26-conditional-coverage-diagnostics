@@ -69,5 +69,9 @@ Update 2026-07-28 (full local CPU): Ailerons seed 2 completed all ten source
 test sizes with 0.9070545 raw test coverage. Seeds 0–2 are complete raw
 outputs; none is an aggregate or paper claim.
 
-Current active computation: local CPU Ailerons seed 3 begins after seed 2's
+Update 2026-07-28 (full local CPU): Ailerons seed 3 completed all ten source
+test sizes with 0.8968727 raw test coverage. Seeds 0–3 are complete raw
+outputs; none is an aggregate or paper claim.
+
+Current active computation: local CPU Ailerons seed 4 begins after seed 3's
 completion and uses the same idempotent output directory.
