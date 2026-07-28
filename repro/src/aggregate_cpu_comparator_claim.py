@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Aggregate the released CPU LightGBM-versus-PartitionWise comparison.
 
-The camera-ready CPU repair runs exactly the two CPU comparator blocks that
-are present in the released classifier driver.  This utility requires every
-source-scale checkpoint and reports the direct qualitative comparison only; it
-does not mislabel this two-method result as the paper's GPU-inclusive Table-2
-percentage-of-maximum statistic.
+The pinned-covmetrics CPU replay runs the two released CPU comparator classes
+with the direct L1 loss. This utility requires every source-scale checkpoint
+and reports the direct qualitative comparison only; it does not mislabel this
+two-method result as the paper's GPU-inclusive Table-2 percentage-of-maximum
+statistic.
 """
 
 from __future__ import annotations
@@ -24,7 +24,10 @@ DATASETS = (
 SEEDS = tuple(range(10))
 METHODS = ("CheapBetterLGBMClassifier", "PartitionWise")
 METRIC = "ERT_L1_miscoverage"
-PROTOCOL = {"split": "40/10/50", "alpha": 0.1, "ert_folds": 5, "device": "cpu"}
+PROTOCOL = {
+    "split": "40/10/50", "alpha": 0.1, "ert_folds": 5, "device": "cpu",
+    "ert_backend": "pinned covmetrics L1_miscoverage",
+}
 
 
 def mean(values: list[float]) -> float:
