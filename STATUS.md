@@ -41,3 +41,15 @@ RealMLP → conformalizer path also completed on an 800-row real diamonds smoke
 after forcing `device="cpu"`; leaving `device=None` attempted the incompatible
 local GTX 1050 and failed with `cudaErrorNoKernelImageForDevice`. The observed
 0.9125 smoke coverage is a setup control only, never a paper-scale claim.
+
+Update 2026-07-28 (durable runner): `repro/src/run_full_repaired_cpu.py`
+implements one complete Appendix-H dataset/seed at full data scale, including
+the source 40/10/50 split, CPU RealMLP, ten test sizes, and five-fold ERT for
+the source-derived CPU LightGBM and PartitionWise blocks. It atomically
+checkpoints after each test size. `repro/jobs/full_cpu_entrypoint.py` runs it
+from a read-only project mount with raw data and checkpoints on writable
+`/data`. After cooldown, submit one job at a time with:
+
+`hf jobs uv run --detach --flavor cpu-upgrade --timeout 8h --secrets HF_TOKEN -v .:/workspace:ro -v hf://buckets/DineshAI/jobs-artifacts:/data:rw repro/jobs/full_cpu_entrypoint.py <dataset> <seed>`
+
+The local project was committed at `f88c53d`. No full dataset/seed has yet run.
