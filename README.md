@@ -21,5 +21,7 @@ Source-faithful, CPU-first reproduction for ICML 2026 challenge paper
 5. Source-faithful classification/CP-strategy decomposition results.
 6. Algorithm 1 cross-validated ERT estimator.
 
-No claim is verified by this scaffold. The exact TabArena data version and
-row/column counts must be recovered before any full source execution.
+Claims 1, 4, and 6 have deterministic independent foundation checks in
+`repro/src/verify_ert_foundations.py`; their raw result is intentionally kept
+separate from the pending full-scale benchmark and synthetic evidence. The
+publication gate still requires at least two further source-anchored claims.

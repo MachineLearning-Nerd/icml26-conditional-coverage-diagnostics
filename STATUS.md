@@ -177,7 +177,7 @@ full 5,742-row scale. Its strict aggregate mean coverage is 0.9056058 (SEM
 claim.
 
 Current active computation: the fail-closed master queue is running local CPU
-Superconductivity seed 0, then will run seeds 1–9 and independently audit and
+Superconductivity seed 4, then will run seeds 5–9 and independently audit and
 strictly aggregate it before serially advancing through the two remaining
 Appendix-H datasets. It does not publish or create a claim.
 
@@ -196,3 +196,13 @@ recomputes and verifies the pinned split/model coverage contract first, retains
 only matching saved test-size metrics, and consumes the original seeded sample
 draws before skipping retained sizes. This preserves the source sampling order
 on recovery and makes the serial queues fail closed on incompatible artifacts.
+
+Update 2026-07-28 (deterministic foundation evidence): an independent verifier
+now calls the pinned `covmetrics` implementation on an exact 90%-coverage
+construction and separately records the source estimator's fitted/tested
+partitions. The constant 0.9 predictor has zero L1/L2/KL excess risk, whereas
+an intentionally nonconstant candidate cannot improve it; 95% and 85%
+constructions isolate the positive over and under L1 components respectively;
+and all five source KFold partitions exactly match an independent KFold audit.
+This is evidence for anchored claims 1, 4, and 6 only. The full-scale
+eight-dataset and synthetic claims remain required before publication.
