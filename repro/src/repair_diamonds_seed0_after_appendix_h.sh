@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Repair the sole legacy Diamonds checkpoint only after the serial Appendix-H
-# queue is completely finished.  The replacement retains the legacy artifact
-# for comparison and makes the ten-seed Diamonds record independently auditable.
+# Repair legacy coverage-integrity checkpoints only after the serial Appendix-H
+# queue is complete.  Replacements retain legacy artifacts for comparison and
+# make every Appendix-H record independently auditable.
 set -euo pipefail
 
 raw_dir=/tmp/vaap-source-data
@@ -21,18 +21,35 @@ while pgrep -f 'run_full_repaired_cpu.py' >/dev/null; do
   sleep 30
 done
 
-checkpoint="$output_dir/diamonds_seed0.json"
 mkdir -p "$legacy_dir"
-if [ -f "$checkpoint" ]; then
-  mv "$checkpoint" "$legacy_dir/diamonds_seed0.pre-integrity.json"
-fi
 
-uv run --with numpy --with pandas --with liac-arff --with scikit-learn \
-  --with torch --with scipy --with lightgbm --with pytabkit \
-  --with probmetrics --with numba python "$runner" diamonds 0 \
-  --raw-dir "$raw_dir" --output-dir "$output_dir"
+repair_seed() {
+  local dataset=$1
+  local seed=$2
+  local checkpoint="$output_dir/${dataset}_seed${seed}.json"
+  if [ -f "$checkpoint" ]; then
+    mv "$checkpoint" "$legacy_dir/${dataset}_seed${seed}.pre-integrity.json"
+  fi
+  uv run --with numpy --with pandas --with liac-arff --with scikit-learn \
+    --with torch --with scipy --with lightgbm --with pytabkit \
+    --with probmetrics --with numba python "$runner" "$dataset" "$seed" \
+    --raw-dir "$raw_dir" --output-dir "$output_dir"
+}
 
-uv run --with numpy python repro/src/audit_full_cpu_outputs.py diamonds \
-  --output-dir "$output_dir" --require-integrity > "$output_dir/diamonds_audit.json"
-uv run --with numpy python repro/src/aggregate_full_cpu.py diamonds \
-  --output-dir "$output_dir" --result "$output_dir/diamonds_summary.json"
+# Diamonds seed 0 and all Ailerons seeds are valid legacy source results but
+# predate coverage digest persistence.  Preserve them and rerun serially.
+repair_seed diamonds 0
+for seed in {0..9}; do
+  repair_seed ailerons "$seed"
+done
+
+datasets=(ailerons diamonds winequality miami2016 o11 superconductivity deliverytime protein)
+for dataset in "${datasets[@]}"; do
+  uv run --with numpy python repro/src/audit_full_cpu_outputs.py "$dataset" \
+    --output-dir "$output_dir" --require-integrity > "$output_dir/${dataset}_audit.json"
+  uv run --with numpy python repro/src/aggregate_full_cpu.py "$dataset" \
+    --output-dir "$output_dir" --result "$output_dir/${dataset}_summary.json"
+done
+
+uv run --with numpy python repro/src/aggregate_appendix_h.py \
+  --output-dir "$output_dir" --result "$output_dir/appendix_h_integrity.json"
