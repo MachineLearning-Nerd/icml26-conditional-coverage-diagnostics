@@ -177,7 +177,7 @@ full 5,742-row scale. Its strict aggregate mean coverage is 0.9056058 (SEM
 claim.
 
 Current active computation: the fail-closed master queue is running local CPU
-Superconductivity seed 4, then will run seeds 5–9 and independently audit and
+Superconductivity seed 5, then will run seeds 6–9 and independently audit and
 strictly aggregate it before serially advancing through the two remaining
 Appendix-H datasets. It does not publish or create a claim.
 
@@ -206,3 +206,10 @@ constructions isolate the positive over and under L1 components respectively;
 and all five source KFold partitions exactly match an independent KFold audit.
 This is evidence for anchored claims 1, 4, and 6 only. The full-scale
 eight-dataset and synthetic claims remain required before publication.
+
+Queued next computation: a detached zero-CPU synthetic queue waits for the
+all-eight Appendix-H integrity manifest, then runs ten serial atomic synthetic
+seeds using the released 300,000-test-point generator and all fifteen released
+test sizes. It evaluates the pinned L1-ERT field directly and records the
+known conditional-coverage truth; it does not relabel the legacy driver's
+Brier-only field as L1-ERT.
