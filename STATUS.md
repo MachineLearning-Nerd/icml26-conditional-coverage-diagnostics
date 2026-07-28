@@ -170,10 +170,16 @@ at its full 13,932-row scale. Its strict aggregate mean coverage is 0.8998134
 full 6,967-example coverage records. This is one Appendix-H dataset, not a
 paper claim.
 
+Update 2026-07-28 (full local CPU): O11 completed all ten source seeds at its
+full 5,742-row scale. Its strict aggregate mean coverage is 0.9056058 (SEM
+0.0033696), and an independent required-integrity audit passed all ten full
+2,872-example coverage records. This is one Appendix-H dataset, not a paper
+claim.
+
 Current active computation: the fail-closed master queue is running local CPU
-O11 seed 0, then will run seeds 1–9 and independently audit/strictly aggregate
-it before serially advancing through the three remaining Appendix-H datasets.
-It does not publish or create a claim.
+Superconductivity seed 0, then will run seeds 1–9 and independently audit and
+strictly aggregate it before serially advancing through the two remaining
+Appendix-H datasets. It does not publish or create a claim.
 
 Queue integrity hardening: the legacy Ailerons seeds 0–9 and Diamonds seed 0
 have the correct protocol and ten-size data but predate persisted coverage
