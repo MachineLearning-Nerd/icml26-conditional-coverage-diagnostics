@@ -163,13 +163,14 @@ WineQuality seed 0, then will run seeds 1–9 and independently audit/strictly
 aggregate it before serially advancing through the five remaining Appendix-H
 datasets. It does not publish or create a claim.
 
-Queue integrity hardening: the legacy Diamonds seed 0 result has the correct
-protocol and ten-size data but predates persisted coverage digest recording.
-A fourth detached, non-overlapping repair waits for the six-dataset Appendix-H
-queue to finish, preserves that legacy checkpoint, reruns only seed 0 with the
-current source-faithful runner, and requires integrity checks on all ten
-Diamonds seeds before replacing the strict aggregate. This repair is evidence
-hardening only and does not create a claim.
+Queue integrity hardening: the legacy Ailerons seeds 0–9 and Diamonds seed 0
+have the correct protocol and ten-size data but predate persisted coverage
+digest recording. A fourth detached, non-overlapping repair waits for the
+six-dataset Appendix-H queue to finish, preserves those legacy checkpoints,
+reruns them with the current source-faithful runner, and then requires
+integrity checks and strict aggregation on all eight datasets before writing a
+single Appendix-H integrity manifest. This is evidence hardening only and does
+not create a claim.
 
 Update 2026-07-28 (queue hardening): the full-scale runner now resumes an
 incomplete atomic result instead of treating its existence as completion. It
