@@ -52,4 +52,10 @@ from a read-only project mount with raw data and checkpoints on writable
 
 `hf jobs uv run --detach --flavor cpu-upgrade --timeout 8h --secrets HF_TOKEN -v .:/workspace:ro -v hf://buckets/DineshAI/jobs-artifacts:/data:rw repro/jobs/full_cpu_entrypoint.py <dataset> <seed>`
 
-The local project was committed at `f88c53d`. No full dataset/seed has yet run.
+The local project was committed at `f88c53d`.
+
+Update 2026-07-28 (full local CPU): Ailerons seed 0 completed the complete
+paper-scale protocol and atomically wrote all ten test-size checkpoints to
+`outputs/full-cpu/ailerons_seed0.json`. Its exact split sizes were
+5,500/1,375/6,875; observed test coverage was 0.9173818. This is one raw seed
+of ten and is not an aggregate, paper claim, queue candidate, or publication.
