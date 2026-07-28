@@ -158,9 +158,15 @@ covered-total, and SHA-256 integrity checks. The ten raw seeds have a strict
 one-dataset aggregate of 0.9004042 mean coverage (SEM 0.0015258). This is not
 a paper claim; its legacy seed 0 integrity repair remains queued below.
 
+Update 2026-07-28 (full local CPU): WineQuality completed all ten source seeds
+at its full 6,497-row scale. Its strict aggregate mean coverage is 0.8942154
+(SEM 0.0032929), and an independent required-integrity audit passed all ten
+full 3,250-example coverage records. This is one Appendix-H dataset, not a
+paper claim.
+
 Current active computation: the fail-closed master queue is running local CPU
-WineQuality seed 0, then will run seeds 1–9 and independently audit/strictly
-aggregate it before serially advancing through the five remaining Appendix-H
+Miami2016 seed 0, then will run seeds 1–9 and independently audit/strictly
+aggregate it before serially advancing through the four remaining Appendix-H
 datasets. It does not publish or create a claim.
 
 Queue integrity hardening: the legacy Ailerons seeds 0–9 and Diamonds seed 0
