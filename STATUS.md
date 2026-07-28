@@ -111,4 +111,6 @@ record passed the persisted count, covered-total, and SHA-256 integrity checks.
 It is a second raw seed of ten and is not an aggregate or paper claim.
 
 Current active computation: local CPU Diamonds seed 2 begins with the same
-pinned source data and full-scale runner.
+pinned source data and full-scale runner. A detached serial watchdog is
+waiting behind it and will run seeds 3--9 one at a time using that exact
+command; it does not permit CPU overlap.
