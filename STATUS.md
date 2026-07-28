@@ -93,5 +93,7 @@ Update 2026-07-28 (full local CPU): Ailerons seed 8 completed all ten source
 test sizes with 0.8805818 raw test coverage. Seeds 0–8 are complete raw
 outputs; none is an aggregate or paper claim.
 
-Current active computation: local CPU Ailerons seed 9 begins after seed 8's
-completion and uses the same idempotent output directory.
+Update 2026-07-28 (full local CPU): Ailerons seed 9 completed all ten source
+test sizes with 0.8928000 raw test coverage. The complete Ailerons 10-seed
+source-protocol unit is ready for strict aggregation and independent audit;
+it is still only one of eight Appendix-H datasets and not a paper claim.
