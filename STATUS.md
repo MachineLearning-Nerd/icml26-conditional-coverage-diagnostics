@@ -22,8 +22,9 @@ preparation and repair the released benchmark invocation before any run.
   hardware.
 - Nothing has been queued, published, or presented as a result.
 
-Next action: run deterministic data preparation against the pinned raw files,
-independently validate its manifest, then execute a small source smoke test.
+Next action: package the repaired CPU runner with durable checkpointing, then
+run the full eight-dataset ten-seed protocol on permitted `cpu-upgrade` once
+the shared Hub cooldown permits job submission.
 
 Update 2026-07-28: deterministic preparation passed all eight Appendix-H
 shape checks with raw and prepared hashes. `repro/jobs/source_smoke.py` is
@@ -32,3 +33,11 @@ existing private jobs-artifacts dataset, but the Hub rejected submission before
 compute (`429` shared API/repository-creation cooldown). No job ID, result, or
 claim follows from that rejected submission. Retry only after the shared
 cooldown has expired; continue local audit work meanwhile.
+
+Update 2026-07-28 (local CPU smoke): the `probmetrics` import required the
+additional explicit `numba` dependency. The source-derived LightGBM and
+PartitionWise paths then completed source ERT's five-fold control. The source
+RealMLP → conformalizer path also completed on an 800-row real diamonds smoke
+after forcing `device="cpu"`; leaving `device=None` attempted the incompatible
+local GTX 1050 and failed with `cudaErrorNoKernelImageForDevice`. The observed
+0.9125 smoke coverage is a setup control only, never a paper-scale claim.
