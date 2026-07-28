@@ -97,3 +97,6 @@ Update 2026-07-28 (full local CPU): Ailerons seed 9 completed all ten source
 test sizes with 0.8928000 raw test coverage. The complete Ailerons 10-seed
 source-protocol unit is ready for strict aggregation and independent audit;
 it is still only one of eight Appendix-H datasets and not a paper claim.
+
+Current active computation: local CPU Diamonds seed 0 uses the pinned 53,940
+row Appendix-H source data and the same idempotent full-scale runner.
