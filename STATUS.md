@@ -105,5 +105,10 @@ Update 2026-07-28 (full local CPU): Diamonds seed 0 completed all ten source
 test sizes with 0.9069707 raw test coverage. It is one raw seed of ten and is
 not an aggregate or paper claim.
 
-Current active computation: local CPU Diamonds seed 1 begins with the same
+Update 2026-07-28 (full local CPU): Diamonds seed 1 completed all ten source
+test sizes with 0.8975899 raw test coverage. Its full 26,970-example coverage
+record passed the persisted count, covered-total, and SHA-256 integrity checks.
+It is a second raw seed of ten and is not an aggregate or paper claim.
+
+Current active computation: local CPU Diamonds seed 2 begins with the same
 pinned source data and full-scale runner.
