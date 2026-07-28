@@ -130,3 +130,10 @@ neither task publishes or creates a claim. A third fail-closed master queue
 waits for the resulting Diamonds aggregate, then runs the remaining six
 Appendix-H datasets one seed at a time, auditing and strictly aggregating each
 dataset before advancing. It also does not publish or create a claim.
+
+Update 2026-07-28 (queue hardening): the full-scale runner now resumes an
+incomplete atomic result instead of treating its existence as completion. It
+recomputes and verifies the pinned split/model coverage contract first, retains
+only matching saved test-size metrics, and consumes the original seeded sample
+draws before skipping retained sizes. This preserves the source sampling order
+on recovery and makes the serial queues fail closed on incompatible artifacts.

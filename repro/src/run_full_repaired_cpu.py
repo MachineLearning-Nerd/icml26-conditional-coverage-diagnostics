@@ -57,9 +57,6 @@ def prepare_frame(dataset: str, raw_dir: Path) -> pd.DataFrame:
 
 def run_one(dataset: str, seed: int, raw_dir: Path, output_dir: Path) -> Path:
     result_path = output_dir / f"{dataset}_seed{seed}.json"
-    if result_path.exists():
-        print(f"checkpoint exists: {result_path}")
-        return result_path
 
     seed_everything(seed)
     frame = prepare_frame(dataset, raw_dir)
@@ -76,7 +73,7 @@ def run_one(dataset: str, seed: int, raw_dir: Path, output_dir: Path) -> Path:
     coverage = np.asarray(conformalizer.get_cover(x_test, y_test), dtype=int)
 
     sizes = np.round(np.logspace(np.log10(300), np.log10(len(x_test)), 10)).astype(int)
-    result = {
+    expected = {
         "dataset": dataset,
         "seed": seed,
         "source_protocol": {"split": "40/10/50", "alpha": 0.1, "ert_folds": 5, "device": "cpu"},
@@ -89,8 +86,23 @@ def run_one(dataset: str, seed: int, raw_dir: Path, output_dir: Path) -> Path:
         },
         "samples": {},
     }
+    if result_path.exists():
+        result = json.loads(result_path.read_text())
+        # A partial checkpoint is durable progress, not a completed run.  Only
+        # reuse it after recomputing and matching the split/model coverage
+        # contract, so an accidental path collision cannot mix protocols.
+        for key in ("dataset", "seed", "source_protocol", "shape", "average_test_coverage", "coverage_integrity"):
+            if result.get(key) != expected[key]:
+                raise RuntimeError(f"incompatible checkpoint for {dataset} seed {seed}: {key}")
+        if not isinstance(result.get("samples"), dict):
+            raise RuntimeError(f"invalid sample checkpoint for {dataset} seed {seed}")
+        print(f"resuming {dataset} seed={seed} with {len(result['samples'])} saved sizes", flush=True)
+    else:
+        result = expected
     for n_values in sizes:
         indices = np.random.choice(len(x_test), size=int(n_values), replace=False)
+        if str(int(n_values)) in result["samples"]:
+            continue
         metrics = evaluate_cpu_methods(x_test.iloc[indices], coverage[indices])
         result["samples"][str(int(n_values))] = metrics
         write_json_atomic(result_path, result)
