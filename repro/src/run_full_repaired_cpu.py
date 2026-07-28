@@ -10,6 +10,7 @@ all other split, model, calibration and test-size choices follow the released
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -81,6 +82,11 @@ def run_one(dataset: str, seed: int, raw_dir: Path, output_dir: Path) -> Path:
         "source_protocol": {"split": "40/10/50", "alpha": 0.1, "ert_folds": 5, "device": "cpu"},
         "shape": {"train": len(x_train), "calibration": len(x_calibration), "test": len(x_test)},
         "average_test_coverage": float(coverage.mean()),
+        "coverage_integrity": {
+            "count": int(coverage.size),
+            "covered": int(coverage.sum()),
+            "sha256": hashlib.sha256(coverage.tobytes()).hexdigest(),
+        },
         "samples": {},
     }
     for n_values in sizes:
