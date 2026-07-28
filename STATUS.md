@@ -151,14 +151,17 @@ record passed the independent checkpoint audit, including persisted count,
 covered-total, and SHA-256 integrity checks. It is a ninth raw seed of ten and
 is not an aggregate or paper claim.
 
-Current active computation: local CPU Diamonds seed 9 is running with the same
-pinned source data and full-scale runner. The detached serial watchdog has no
-remaining Diamonds seed after it finishes; a second detached post-queue task
-then runs the independent checkpoint audit and strict ten-seed aggregate.
-Neither task publishes or creates a claim. A third fail-closed master queue
-waits for the resulting Diamonds aggregate, then runs the remaining six
-Appendix-H datasets one seed at a time, auditing and strictly aggregating each
-dataset before advancing. It also does not publish or create a claim.
+Update 2026-07-28 (full local CPU): Diamonds seed 9 completed all ten source
+test sizes with 0.9038932 raw test coverage. Its full 26,970-example coverage
+record passed the independent checkpoint audit, including persisted count,
+covered-total, and SHA-256 integrity checks. The ten raw seeds have a strict
+one-dataset aggregate of 0.9004042 mean coverage (SEM 0.0015258). This is not
+a paper claim; its legacy seed 0 integrity repair remains queued below.
+
+Current active computation: the fail-closed master queue is running local CPU
+WineQuality seed 0, then will run seeds 1–9 and independently audit/strictly
+aggregate it before serially advancing through the five remaining Appendix-H
+datasets. It does not publish or create a claim.
 
 Queue integrity hardening: the legacy Diamonds seed 0 result has the correct
 protocol and ten-size data but predates persisted coverage digest recording.
