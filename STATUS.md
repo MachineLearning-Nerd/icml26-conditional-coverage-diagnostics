@@ -59,3 +59,7 @@ paper-scale protocol and atomically wrote all ten test-size checkpoints to
 `outputs/full-cpu/ailerons_seed0.json`. Its exact split sizes were
 5,500/1,375/6,875; observed test coverage was 0.9173818. This is one raw seed
 of ten and is not an aggregate, paper claim, queue candidate, or publication.
+
+Current active computation: local CPU Ailerons seed 1 began after seed 0's
+completion. It uses the same idempotent output directory and will write
+`outputs/full-cpu/ailerons_seed1.json` only after its first atomic checkpoint.
