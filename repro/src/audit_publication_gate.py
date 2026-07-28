@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Fail closed on the evidence required before this paper may be published.
 
-This is deliberately an evidence gate, not a scorer.  It counts six separate
-source-anchored findings only when their underlying full outputs are present:
-three deterministic ERT foundations and three observations from the released
-heteroscedastic synthetic experiment.  The Appendix-H manifest is required as
-protocol evidence but is not counted as a jury claim.
+This is deliberately an evidence gate, not a scorer.  It counts only distinct
+source-anchored claims when their underlying full outputs are present.  The
+three deterministic ERT foundations and the released heteroscedastic synthetic
+experiment are four claims, not six: separate observations inside the one
+synthetic experiment must never be inflated into extra jury claims.  The
+Appendix-H manifest is required as protocol evidence but is not counted as a
+jury claim.
 """
 
 from __future__ import annotations
@@ -124,11 +126,15 @@ def synthetic_claims(summary: dict) -> list[dict]:
     if not ert_separation > covgap_separation:
         raise RuntimeError("synthetic L1-ERT does not separate the two constructions more than CovGap")
 
-    return [
-        {"id": "3a", "claim": "at roughly 5,000 test points L1-ERT detects standard-CP conditional error more accurately than CovGap", "evidence": {"test_size": int(size), "MSE": mse_values}},
-        {"id": "3b", "claim": "at roughly 5,000 test points L1-ERT recognizes the oracle conditional construction more accurately than CovGap", "evidence": {"test_size": int(size), "HR": hr_values}},
-        {"id": "3c", "claim": "at roughly 5,000 test points L1-ERT separates standard and oracle constructions more strongly than CovGap", "evidence": {"test_size": int(size), "l1_ert_separation": ert_separation, "covgap_separation": covgap_separation}},
-    ]
+    return [{
+        "id": "3",
+        "claim": "released high-dimensional synthetic comparison: L1-ERT distinguishes standard and oracle conformal constructions more reliably than CovGap",
+        "evidence": {
+            "test_size": int(size), "MSE": mse_values, "HR": hr_values,
+            "l1_ert_separation": ert_separation,
+            "covgap_separation": covgap_separation,
+        },
+    }]
 
 
 def main() -> None:
@@ -144,7 +150,10 @@ def main() -> None:
     require_appendix_manifest(appendix_manifest)
     claims = foundation_claims(foundations) + synthetic_claims(synthetic_summary)
     if len(claims) < 5:
-        raise RuntimeError("fewer than five independently evidenced claims")
+        raise RuntimeError(
+            "fewer than five distinct independently evidenced claims; do not "
+            "inflate multiple observations from one experiment into claims"
+        )
     atomic_json(args.result, {
         "publication_eligible": True,
         "claim_count": len(claims),
