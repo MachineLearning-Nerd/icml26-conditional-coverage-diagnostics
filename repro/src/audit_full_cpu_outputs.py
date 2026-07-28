@@ -10,6 +10,8 @@ import math
 from pathlib import Path
 
 
+EXPECTED_PROTOCOL = {"split": "40/10/50", "alpha": 0.1, "ert_folds": 5, "device": "cpu"}
+
 def valid_digest(value: object) -> bool:
     if not isinstance(value, str) or len(value) != hashlib.sha256().digest_size * 2:
         return False
@@ -22,6 +24,8 @@ def valid_digest(value: object) -> bool:
 
 def audit(path: Path, require_integrity: bool) -> dict:
     record = json.loads(path.read_text())
+    if record.get("source_protocol") != EXPECTED_PROTOCOL:
+        raise RuntimeError(f"{path}: source protocol mismatch")
     samples = record.get("samples")
     if not isinstance(samples, dict) or len(samples) != 10:
         raise RuntimeError(f"{path}: expected all ten test sizes")
@@ -40,6 +44,8 @@ def audit(path: Path, require_integrity: bool) -> dict:
         covered = integrity.get("covered")
         if not isinstance(covered, int) or not 0 <= covered <= integrity["count"] or not valid_digest(integrity.get("sha256")):
             raise RuntimeError(f"{path}: invalid persisted coverage integrity")
+        if not math.isclose(coverage, covered / integrity["count"], rel_tol=0.0, abs_tol=1e-15):
+            raise RuntimeError(f"{path}: persisted coverage total disagrees with reported coverage")
     return {"seed": record.get("seed"), "coverage": coverage, "integrity": integrity is not None}
 
 
