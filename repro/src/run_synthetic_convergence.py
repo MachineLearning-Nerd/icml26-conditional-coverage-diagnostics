@@ -26,12 +26,16 @@ import torch
 
 ROOT = Path(__file__).resolve().parents[2]
 GENERAL = ROOT / "upstream" / "Conditional_Coverage_Estimation" / "experiments" / "experiments_general" / "code"
+METRICS = ROOT / "upstream" / "covmetrics" / "src"
 if str(GENERAL) not in sys.path:
     sys.path.insert(0, str(GENERAL))
+if str(METRICS) not in sys.path:
+    sys.path.insert(0, str(METRICS))
 
 from conditional_coverage_metrics import CoverageGap, KMeansGrouping, seed_everything  # noqa: E402
 from repaired_cpu_ert import CheapBetterLGBMClassifier  # noqa: E402
-from ERT import ERT  # noqa: E402
+from covmetrics.ERT import ERT as CovmetricsERT  # noqa: E402
+from covmetrics.losses import L1_miscoverage  # noqa: E402
 
 
 ALPHA = 0.1
@@ -122,7 +126,9 @@ def evaluate_subset(features: np.ndarray, cover: np.ndarray) -> dict[str, float]
     groups = KMeansGrouping()
     groups.fit(feature_tensor, n_groups=n_groups)
     covgap = CoverageGap(alpha=ALPHA).evaluate(cover_tensor, groups(feature_tensor))
-    ert = ERT(CheapBetterLGBMClassifier).evaluate_all(features, cover, ALPHA, n_splits=5)
+    ert = CovmetricsERT(CheapBetterLGBMClassifier).evaluate_multiple_losses(
+        features, cover, ALPHA, n_splits=5, all_losses=[L1_miscoverage]
+    )
     l1_ert = ert.get("ERT_L1_miscoverage")
     if not isinstance(l1_ert, (int, float)) or not np.isfinite(l1_ert):
         raise RuntimeError(f"invalid source L1-ERT result: {ert}")
