@@ -26,6 +26,8 @@ Claims 1, 4, and 6 have deterministic independent foundation checks in
 separate from the pending full-scale benchmark and synthetic evidence. The
 publication gate still requires at least two further source-anchored claims.
 `repro/src/audit_publication_gate.py` is fail-closed: it requires the complete
-eight-dataset integrity manifest, the ten-seed synthetic aggregate, and at
-least five separately evidenced claims before it can write a local eligibility
-record. It does not itself publish anything.
+eight-dataset integrity manifest, the ten-seed synthetic aggregate, and the
+complete eight-dataset CPU LightGBM-versus-PartitionWise aggregate before it
+can write a five-claim local eligibility record. The latter is explicitly a
+two-CPU-comparator result, not a substitute for the paper's GPU-inclusive
+percentage table. It does not itself publish anything.
