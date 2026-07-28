@@ -139,15 +139,21 @@ record passed the independent checkpoint audit, including persisted count,
 covered-total, and SHA-256 integrity checks. It is a seventh raw seed of ten
 and is not an aggregate or paper claim.
 
-Current active computation: local CPU Diamonds seed 7 begins with the same
+Update 2026-07-28 (full local CPU): Diamonds seed 7 completed all ten source
+test sizes with 0.8926956 raw test coverage. Its full 26,970-example coverage
+record passed the independent checkpoint audit, including persisted count,
+covered-total, and SHA-256 integrity checks. It is an eighth raw seed of ten
+and is not an aggregate or paper claim.
+
+Current active computation: local CPU Diamonds seed 8 begins with the same
 pinned source data and full-scale runner. The detached serial watchdog will
-run seeds 8--9 one at a time using that exact command; it does not permit CPU
-overlap. A second detached post-queue task waits for that serial run to exit,
-then runs the independent checkpoint audit and strict ten-seed aggregate;
-neither task publishes or creates a claim. A third fail-closed master queue
-waits for the resulting Diamonds aggregate, then runs the remaining six
-Appendix-H datasets one seed at a time, auditing and strictly aggregating each
-dataset before advancing. It also does not publish or create a claim.
+run seed 9 using that exact command; it does not permit CPU overlap. A second
+detached post-queue task waits for that serial run to exit, then runs the
+independent checkpoint audit and strict ten-seed aggregate; neither task
+publishes or creates a claim. A third fail-closed master queue waits for the
+resulting Diamonds aggregate, then runs the remaining six Appendix-H datasets
+one seed at a time, auditing and strictly aggregating each dataset before
+advancing. It also does not publish or create a claim.
 
 Update 2026-07-28 (queue hardening): the full-scale runner now resumes an
 incomplete atomic result instead of treating its existence as completion. It
