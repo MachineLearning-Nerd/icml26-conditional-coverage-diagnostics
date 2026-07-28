@@ -21,3 +21,8 @@ for seed in {0..9}; do
     --with lightgbm --with catboost --with pytabkit --with probmetrics --with numba --with tqdm \
     python repro/src/run_synthetic_convergence.py "$seed" --output-dir outputs/synthetic
 done
+
+uv run --with numpy --with pandas --with scipy --with scikit-learn --with torch \
+  --with lightgbm --with catboost --with pytabkit --with probmetrics --with numba --with tqdm \
+  python repro/src/aggregate_synthetic_convergence.py \
+  --output-dir outputs/synthetic --result outputs/synthetic/summary.json
