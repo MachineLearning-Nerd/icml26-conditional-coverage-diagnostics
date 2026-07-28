@@ -177,7 +177,7 @@ full 5,742-row scale. Its strict aggregate mean coverage is 0.9056058 (SEM
 claim.
 
 Current active computation: the fail-closed master queue is running local CPU
-Superconductivity seed 5, then will run seeds 6–9 and independently audit and
+Superconductivity seed 7, then will run seeds 8–9 and independently audit and
 strictly aggregate it before serially advancing through the two remaining
 Appendix-H datasets. It does not publish or create a claim.
 
