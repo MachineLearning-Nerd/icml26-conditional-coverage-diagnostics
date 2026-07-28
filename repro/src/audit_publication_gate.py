@@ -3,11 +3,11 @@
 
 This is deliberately an evidence gate, not a scorer.  It counts only distinct
 source-anchored claims when their underlying full outputs are present.  The
-three deterministic ERT foundations and the released heteroscedastic synthetic
-experiment are four claims, not six: separate observations inside the one
-synthetic experiment must never be inflated into extra jury claims.  The
-Appendix-H manifest is required as protocol evidence but is not counted as a
-jury claim.
+three deterministic ERT foundations, the source-scale CPU comparator result,
+and the released heteroscedastic synthetic experiment are five claims, not
+seven: separate observations inside the one synthetic experiment must never be
+inflated into extra jury claims.  The Appendix-H manifest is required as
+protocol evidence but is not counted as a jury claim.
 """
 
 from __future__ import annotations
@@ -137,18 +137,46 @@ def synthetic_claims(summary: dict) -> list[dict]:
     }]
 
 
+def comparator_claim(summary: dict) -> dict:
+    expected_methods = ["CheapBetterLGBMClassifier", "PartitionWise"]
+    if set(summary.get("datasets", [])) != REQUIRED_DATASETS or summary.get("seed_count") != 10:
+        raise RuntimeError("CPU comparator summary does not cover all eight datasets and ten seeds")
+    if summary.get("test_sizes_per_seed") != 10 or summary.get("metric") != "ERT_L1_miscoverage":
+        raise RuntimeError("CPU comparator summary protocol mismatch")
+    if summary.get("methods") != expected_methods:
+        raise RuntimeError("CPU comparator method identity mismatch")
+    overall = summary.get("overall")
+    paired = summary.get("paired_cells")
+    if not isinstance(overall, dict) or not isinstance(paired, dict):
+        raise RuntimeError("CPU comparator summary shape mismatch")
+    lightgbm = finite(overall[expected_methods[0]].get("mean"), "LightGBM mean L1 ERT")
+    partitionwise = finite(overall[expected_methods[1]].get("mean"), "PartitionWise mean L1 ERT")
+    lgbm_wins, partitionwise_wins = paired.get("lgbm"), paired.get("partitionwise")
+    if not isinstance(lgbm_wins, int) or not isinstance(partitionwise_wins, int):
+        raise RuntimeError("invalid paired comparator counts")
+    if not (lightgbm > partitionwise and lgbm_wins > partitionwise_wins):
+        raise RuntimeError("full CPU comparator evidence does not support LightGBM over PartitionWise")
+    return {
+        "id": "2",
+        "claim": "source-scale CPU comparison: LightGBM recovers more L1-ERT than PartitionWise under the shared protocol",
+        "evidence": {"overall_l1_ert": overall, "paired_cells": paired},
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--foundations", type=Path, required=True)
     parser.add_argument("--appendix-manifest", type=Path, required=True)
     parser.add_argument("--synthetic-summary", type=Path, required=True)
+    parser.add_argument("--cpu-comparator-summary", type=Path, required=True)
     parser.add_argument("--result", type=Path, required=True)
     args = parser.parse_args()
     foundations = load(args.foundations)
     appendix_manifest = load(args.appendix_manifest)
     synthetic_summary = load(args.synthetic_summary)
+    cpu_comparator_summary = load(args.cpu_comparator_summary)
     require_appendix_manifest(appendix_manifest)
-    claims = foundation_claims(foundations) + synthetic_claims(synthetic_summary)
+    claims = foundation_claims(foundations) + [comparator_claim(cpu_comparator_summary)] + synthetic_claims(synthetic_summary)
     if len(claims) < 5:
         raise RuntimeError(
             "fewer than five distinct independently evidenced claims; do not "
