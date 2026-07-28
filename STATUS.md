@@ -100,3 +100,10 @@ it is still only one of eight Appendix-H datasets and not a paper claim.
 
 Current active computation: local CPU Diamonds seed 0 uses the pinned 53,940
 row Appendix-H source data and the same idempotent full-scale runner.
+
+Update 2026-07-28 (full local CPU): Diamonds seed 0 completed all ten source
+test sizes with 0.9069707 raw test coverage. It is one raw seed of ten and is
+not an aggregate or paper claim.
+
+Current active computation: local CPU Diamonds seed 1 begins with the same
+pinned source data and full-scale runner.
