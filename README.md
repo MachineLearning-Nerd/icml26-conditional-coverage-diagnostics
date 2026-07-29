@@ -11,23 +11,21 @@ Source-faithful, CPU-first reproduction for ICML 2026 challenge paper
   `a5205aada6a0f39e3812daf087753217ef66b159`.
 - The complete upstream checkouts are vendored under `upstream/`.
 
-## Anchored claim map
+## Published reproduction evidence
 
-1. ERT construction and its constant-predictor principle.
-2. CPU LightGBM statistical-power comparison on the eight named TabArena
-   datasets, with ten seeds and five-fold ERT estimation.
-3. Synthetic reliability comparison with CovGap at the released test sizes.
-4. Over-/under-coverage decomposition.
-5. Source-faithful classification/CP-strategy decomposition results.
-6. Algorithm 1 cross-validated ERT estimator.
+The local publication gate passed with five distinct source-anchored claims:
 
-Claims 1, 4, and 6 have deterministic independent foundation checks in
-`repro/src/verify_ert_foundations.py`; their raw result is intentionally kept
-separate from the pending full-scale benchmark and synthetic evidence. The
-publication gate still requires at least two further source-anchored claims.
-`repro/src/audit_publication_gate.py` is fail-closed: it requires the complete
-eight-dataset integrity manifest, the ten-seed synthetic aggregate, and the
-complete eight-dataset CPU LightGBM-versus-PartitionWise aggregate before it
-can write a five-claim local eligibility record. The latter is explicitly a
-two-CPU-comparator result, not a substitute for the paper's GPU-inclusive
-percentage table. It does not itself publish anything.
+1. ERT construction and the constant-target principle.
+2. A direct CPU LightGBM-versus-PartitionWise L1-ERT comparison over the eight
+   named TabArena datasets, ten seeds, ten test sizes, and five-fold ERT.
+3. A ten-seed high-dimensional synthetic comparison in which L1-ERT separates
+   standard and oracle conformal constructions more reliably than CovGap.
+4. The over-/under-coverage decomposition.
+5. Algorithm-1-style five-fold held-out ERT evaluation.
+
+The full result summary and exact commands are in [`RESULTS.md`](RESULTS.md).
+`repro/src/audit_publication_gate.py` is fail-closed and writes
+`outputs/publication_gate.json` only after all five claims and their required
+protocol evidence validate. The CPU comparator is deliberately scoped to two
+released CPU blocks; it is **not** presented as a reproduction of the paper's
+GPU-inclusive percentage table.
