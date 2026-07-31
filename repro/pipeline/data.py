@@ -24,6 +24,7 @@ dataset contributes to.
 from __future__ import annotations
 
 import hashlib
+import time
 from pathlib import Path
 
 import numpy as np
@@ -62,8 +63,22 @@ def load(name: str) -> dict:
     if cached.exists():
         frame = pd.read_parquet(cached)
     else:
-        bunch = fetch_openml(data_id=spec["openml_id"], as_frame=True, parser="auto")
-        frame = bunch.frame
+        # Several dataset shards start at once and OpenML rate-limits them with
+        # a 503, which is a transport failure rather than a result.  Back off
+        # rather than letting it end a ten-hour job in four seconds.
+        last_error: Exception | None = None
+        for attempt in range(8):
+            try:
+                frame = fetch_openml(data_id=spec["openml_id"], as_frame=True, parser="auto").frame
+                break
+            except Exception as error:  # noqa: BLE001 - re-raised below if terminal
+                last_error = error
+                delay = min(300, 15 * 2 ** attempt)
+                print(f"[repro] openml {spec['openml_id']} attempt {attempt + 1}/8 failed "
+                      f"({type(error).__name__}); retrying in {delay}s", flush=True)
+                time.sleep(delay)
+        else:
+            raise RuntimeError(f"OpenML {spec['openml_id']} unreachable after 8 attempts") from last_error
         frame.to_parquet(cached)
 
     target_column = spec["target"]
