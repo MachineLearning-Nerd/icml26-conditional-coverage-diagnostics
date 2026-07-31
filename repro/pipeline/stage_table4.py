@@ -41,7 +41,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .emit import artifact, note, row
-from .metrics import ert_pinned
+from .metrics import ert_pinned_parallel
 from .provenance import Timer
 
 ALPHA = 0.1
@@ -166,6 +166,21 @@ class BinaryImageClassifier(nn.Module):
         return np.column_stack([1.0 - p, p])
 
 
+class _FoldFit:
+    """Picklable fold worker: fit a fresh ERT classifier and score the held-out rows."""
+
+    def __init__(self, in_channels: int, image_size: int, seed: int, threads: int = 4):
+        self.in_channels, self.image_size, self.seed, self.threads = \
+            in_channels, image_size, seed, threads
+
+    def __call__(self, job):
+        x_train, cover_train, x_test = job
+        torch.set_num_threads(self.threads)
+        model = BinaryImageClassifier(self.in_channels, self.image_size, seed=self.seed)
+        model.fit(x_train, cover_train)
+        return model.predict_proba(x_test)[:, 1]
+
+
 def negative_likelihood_scores(probabilities: np.ndarray, labels: np.ndarray) -> np.ndarray:
     """sadinle2019: S(X, Y) = -p(X)_Y."""
     return -probabilities[np.arange(len(labels)), labels]
@@ -208,7 +223,7 @@ def _load(spec: dict, seed: int, root: str = "data/torchvision"):
     return stack(train), stack(calibration), stack(test)
 
 
-def _cell(dataset: str, seed: int) -> list[dict]:
+def _cell(dataset: str, seed: int, fold_threads: int = 4) -> list[dict]:
     spec = SPECS[dataset]
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -246,9 +261,8 @@ def _cell(dataset: str, seed: int) -> list[dict]:
         sizes = set_sizes(probabilities_test, threshold, strategy)
 
         with Timer() as timer:
-            values = ert_pinned(
-                BinaryImageClassifier,
-                dict(in_channels=spec["in_channels"], image_size=spec["image_size"], seed=seed),
+            values = ert_pinned_parallel(
+                _FoldFit(spec["in_channels"], spec["image_size"], seed, threads=fold_threads),
                 flat_test, cover, alpha=ALPHA,
             )
         record = {
@@ -274,14 +288,12 @@ def _cell(dataset: str, seed: int) -> list[dict]:
 def run(config: dict) -> dict:
     datasets = list(config.get("datasets", SPECS))
     seeds = list(config.get("seeds", range(10)))
-    threads = int(config.get("torch_threads", 0))
-    if threads:
-        torch.set_num_threads(threads)
+    fold_threads = int(config.get("fold_threads", 8))
 
     rows: list[dict] = []
     for dataset in datasets:
         for seed in seeds:
-            rows.extend(_cell(dataset, seed))
+            rows.extend(_cell(dataset, seed, fold_threads=fold_threads))
 
     result = {"claim": "5", "protocol": {
         "alpha": ALPHA, "specs": {k: SPECS[k] for k in datasets}, "seeds": seeds,
