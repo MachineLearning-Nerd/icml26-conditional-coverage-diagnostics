@@ -1,0 +1,42 @@
+{
+  "anchors": [
+    "Table 2",
+    "Section 4.1",
+    "Appendix H Table 5"
+  ],
+  "claim": "2",
+  "code": {
+    "covmetrics": "a5205aada6a0f39e3812daf087753217ef66b159",
+    "experiments": "39a99dcad92205a15d93f2c5fec40c76540abf1c"
+  },
+  "command": "bash repro/run.sh",
+  "decides_falsified_if": "the regenerated statistic under the identical protocol and normalisation puts PartitionWise at or above LightGBM, or puts either more than 5.0 points from its published value with a confidence interval excluding it",
+  "decides_verified_if": [
+    "the statistic is computed over all seven Table-2 methods, four Table-5 datasets, ten experiments and ten sizes",
+    "the same code reproduces the release's own results.csv row to within 1.0 percentage point",
+    "regenerated LightGBM is within 5.0 points of 68.4 and PartitionWise within 5.0 points of 38.3",
+    "the ordering holds and the gap is within 10.0 points of the paper's 30.1"
+  ],
+  "paper": {
+    "arxiv": "2512.11779",
+    "openreview": "vaApZm6MKM",
+    "source_retrieved_utc": "2026-07-31T05:06:34Z",
+    "source_sha256": "1e13e76905dab485726ab80b671ca7140c73e58cdc6001832379f4a349da5a03",
+    "source_url": "https://arxiv.org/html/2512.11779v1"
+  },
+  "quantifiers": {
+    "alpha": 0.1,
+    "datasets": "the four largest TabArena regression datasets of Table 5",
+    "folds": 5,
+    "normalisation": "max over all seven methods and all test sizes within each (dataset, experiment)",
+    "repeats": 10,
+    "test_sizes": "ten log-spaced points from 300 to the full 50% test split"
+  },
+  "statement": "With L1-ERT, LightGBM (medium) recovers 68.4 percent of the maximum and PartitionWise 38.3 percent.",
+  "verifier": "uv run --frozen python -m repro.verify --claims <N>",
+  "would_not_count": [
+    "a normalisation over fewer methods, which is a different and strictly larger statistic",
+    "raw ERT means in place of the percentage",
+    "reusing the authors' committed results.csv as the regenerated result"
+  ]
+}

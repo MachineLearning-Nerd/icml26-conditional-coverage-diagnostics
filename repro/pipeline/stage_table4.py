@@ -173,8 +173,12 @@ class _FoldFit:
         self.in_channels, self.image_size, self.seed, self.threads = \
             in_channels, image_size, seed, threads
 
-    def __call__(self, job):
-        x_train, cover_train, x_test = job
+    def __call__(self, fold):
+        from .metrics import fold_data
+
+        train_index, test_index = fold
+        x, cover = fold_data()
+        x_train, cover_train, x_test = x[train_index], cover[train_index], x[test_index]
         torch.set_num_threads(self.threads)
         model = BinaryImageClassifier(self.in_channels, self.image_size, seed=self.seed)
         model.fit(x_train, cover_train)
