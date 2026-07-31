@@ -1,0 +1,38 @@
+{
+  "anchors": [
+    "Table 4",
+    "Section 4.3.2"
+  ],
+  "claim": "5",
+  "code": {
+    "covmetrics": "a5205aada6a0f39e3812daf087753217ef66b159",
+    "experiments": "39a99dcad92205a15d93f2c5fec40c76540abf1c"
+  },
+  "command": "bash repro/run.sh",
+  "decides_falsified_if": "the two components coincide within noise across cells, or the empty-set mechanism runs the opposite way to the paper's explanation",
+  "decides_verified_if": [
+    "KL-ERT equals KL+-ERT plus KL--ERT to below 1e-9 on every cell",
+    "in every reproduced cell the two components differ by more than twice their standard error",
+    "in every reproduced dataset the likelihood strategy produces at least as many empty prediction sets as the cumulative one"
+  ],
+  "paper": {
+    "arxiv": "2512.11779",
+    "openreview": "vaApZm6MKM",
+    "source_retrieved_utc": "2026-07-31T05:06:34Z",
+    "source_sha256": "1e13e76905dab485726ab80b671ca7140c73e58cdc6001832379f4a349da5a03",
+    "source_url": "https://arxiv.org/html/2512.11779v1"
+  },
+  "quantifiers": {
+    "alpha": 0.1,
+    "folds": 5,
+    "mechanism": "the likelihood strategy produces more empty prediction sets, whose conditional coverage is zero, which KL weights more heavily than L1 and which lands on the under-coverage side",
+    "repeats": 10,
+    "strategies": "negative likelihood (S = -p(X)_Y) and cumulative likelihood"
+  },
+  "statement": "Classification experiments report divergent KL+-ERT and KL--ERT values across conformal prediction methods, demonstrating the over/under-coverage decomposition in practice.",
+  "verifier": "uv run --frozen python -m repro.verify --claims <N>",
+  "would_not_count": [
+    "reporting only KL-ERT without its two parts",
+    "a dataset or strategy outside the two Table-4 strategies"
+  ]
+}
