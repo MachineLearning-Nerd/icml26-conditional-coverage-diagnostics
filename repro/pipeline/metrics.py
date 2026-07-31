@@ -121,6 +121,38 @@ def ert_independent(fit_predict, x, cover, alpha=0.1, n_splits=5, random_state=4
     return {name: float(np.mean(values)) for name, values in folds.items()}
 
 
+def ert_pinned_parallel(fit_predict, x, cover, alpha=0.1, n_splits=5, random_state=42,
+                        workers=5) -> dict:
+    """Identical to `ert_pinned`, with the fold fits spread across processes.
+
+    Only the classifier fits move; the folds come from the same
+    `KFold(shuffle=True, random_state=42)` covmetrics uses (verified index by
+    index in Claim 6's partition audit) and each fold's metric values come from
+    covmetrics' own `evaluate_with_predictions`.  For image covariates the fits
+    dominate the cost by orders of magnitude, and a 64-vCPU box cannot use that
+    width inside a 32-row batch.
+    """
+    from concurrent.futures import ProcessPoolExecutor
+
+    from covmetrics.ERT import evaluate_with_predictions
+
+    x = np.asarray(x, dtype=np.float64)
+    cover = np.asarray(cover, dtype=np.int64)
+    folds = list(KFold(n_splits=n_splits, shuffle=True, random_state=random_state).split(x))
+
+    jobs = [(x[train], cover[train], x[test]) for train, test in folds]
+    with ProcessPoolExecutor(max_workers=min(workers, len(jobs))) as pool:
+        predictions = list(pool.map(fit_predict, jobs))
+
+    values = {f"ERT_{loss.__name__}": [] for loss in ALL_LOSSES}
+    for (_, test), prediction in zip(folds, predictions):
+        for loss in ALL_LOSSES:
+            values[f"ERT_{loss.__name__}"].append(
+                float(evaluate_with_predictions(prediction, cover[test], alpha, loss=loss))
+            )
+    return {key: float(np.mean(v)) for key, v in values.items()}
+
+
 def mean_and_sem(values) -> dict:
     values = np.asarray(values, dtype=float)
     n = len(values)
