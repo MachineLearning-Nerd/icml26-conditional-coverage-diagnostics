@@ -1,6 +1,4 @@
-{
-  "stages": ["smoke"],
-  "params": {
-    "smoke": {"n_points": 3000, "methods": ["PartitionWise", "XT"]}
-  }
-}
+{"stages": ["claim4_decomposition"],
+ "params": {"claim4_decomposition": {"seeds": [0,1,2,3,4,5,6,7,8,9], "n_points": 50000,
+            "methods": ["CheapBetterLGBMClassifier", "BetterCatBoost", "RF", "XT", "PartitionWise"],
+            "localisation_method": "CheapBetterLGBMClassifier"}}}
