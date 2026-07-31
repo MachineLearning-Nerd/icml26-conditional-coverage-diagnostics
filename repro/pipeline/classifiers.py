@@ -149,9 +149,16 @@ def method_spec(name: str, n_test_full: int) -> tuple[type, dict]:
     if name == "PartitionWise":
         return PartitionWisePredictor, dict(n_clusters=max(1, int(n_test_full ** (1 / 4))))
     if name == "TabPFN":
+        # The release passes device and ignore_pretraining_limits.  The version
+        # is pinned to the 2.x line in uv.lock: it is the line the paper's
+        # "RealTabPFN-2.5" belongs to, and 3.x gates its weights behind an
+        # interactive browser licence flow that an unattended job cannot pass.
         from tabpfn import TabPFNClassifier
         return TabPFNClassifier, dict(device="cpu", ignore_pretraining_limits=True)
     if name == "tabICL":
+        # Table 2 names TabICLv1.1, so the v1.1 checkpoint is requested
+        # explicitly rather than taking the package's newer default.
         from tabicl import TabICLClassifier
-        return TabICLClassifier, dict(device="cpu")
+        return TabICLClassifier, dict(device="cpu",
+                                      checkpoint_version="tabicl-classifier-v1.1-20250506.ckpt")
     raise KeyError(name)
