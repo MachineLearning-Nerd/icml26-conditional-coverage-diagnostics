@@ -45,6 +45,9 @@ def _stages():
 def main() -> int:
     warnings.filterwarnings("ignore")
     config = json.loads(CONFIG_PATH.read_text())
+
+    import torch
+    torch.set_num_threads(int(config.get("torch_threads", 8)))
     stages = config.get("stages") or [config["stage"]]
     provenance = snapshot()
 

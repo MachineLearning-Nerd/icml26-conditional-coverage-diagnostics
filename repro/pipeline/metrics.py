@@ -18,6 +18,16 @@ from covmetrics.losses import (
     logloss, logloss_over, logloss_under,
 )
 
+_FOLD_DATA: tuple | None = None
+
+
+def fold_data():
+    """The (x, cover) pair a forked fold worker should read instead of receiving."""
+    if _FOLD_DATA is None:
+        raise RuntimeError("fold data is only available inside a forked fold worker")
+    return _FOLD_DATA
+
+
 ALL_LOSSES = (
     brier_score, logloss, L1_miscoverage,
     brier_score_over, L1_miscoverage_over, logloss_over,
@@ -121,8 +131,59 @@ def ert_independent(fit_predict, x, cover, alpha=0.1, n_splits=5, random_state=4
     return {name: float(np.mean(values)) for name, values in folds.items()}
 
 
+def ert_pinned_parallel(fit_predict, x, cover, alpha=0.1, n_splits=5, random_state=42,
+                        workers=5) -> dict:
+    """Identical to `ert_pinned`, with the fold fits spread across processes.
+
+    Only the classifier fits move; the folds come from the same
+    `KFold(shuffle=True, random_state=42)` covmetrics uses (verified index by
+    index in Claim 6's partition audit) and each fold's metric values come from
+    covmetrics' own `evaluate_with_predictions`.  For image covariates the fits
+    dominate the cost by orders of magnitude, and a 64-vCPU box cannot use that
+    width inside a 32-row batch.
+    """
+    import multiprocessing as mp
+    from concurrent.futures import ProcessPoolExecutor
+
+    from covmetrics.ERT import evaluate_with_predictions
+
+    x = np.asarray(x, dtype=np.float32)
+    cover = np.asarray(cover, dtype=np.int64)
+    folds = list(KFold(n_splits=n_splits, shuffle=True, random_state=random_state).split(x))
+
+    # Image covariates run to hundreds of megabytes, and shipping a copy of the
+    # fit and score matrices to each worker costs more than the fits.  The data
+    # is published to a module global first and the workers are forked from it,
+    # so only the fold indices cross the process boundary.
+    global _FOLD_DATA
+    _FOLD_DATA = (x, cover)
+    try:
+        context = mp.get_context("fork")
+        with ProcessPoolExecutor(max_workers=min(workers, len(folds)), mp_context=context) as pool:
+            predictions = list(pool.map(fit_predict, folds))
+    finally:
+        _FOLD_DATA = None
+
+    values = {f"ERT_{loss.__name__}": [] for loss in ALL_LOSSES}
+    for (_, test), prediction in zip(folds, predictions):
+        for loss in ALL_LOSSES:
+            values[f"ERT_{loss.__name__}"].append(
+                float(evaluate_with_predictions(prediction, cover[test], alpha, loss=loss))
+            )
+    return {key: float(np.mean(v)) for key, v in values.items()}
+
+
 def mean_and_sem(values) -> dict:
-    values = np.asarray(values, dtype=float)
+    # A None marks a quantity that is undefined for that seed - an agreement
+    # rate over an empty region, say.  Those seeds are dropped and counted
+    # rather than being read as zeros; if every seed is undefined the summary
+    # says so instead of inventing a mean.
+    defined = [v for v in values if v is not None]
+    if not defined:
+        return {"mean": None, "std": None, "sem": None, "n": 0,
+                "n_undefined": len(list(values)),
+                "ci95_low": None, "ci95_high": None}
+    values = np.asarray(defined, dtype=float)
     n = len(values)
     sem = float(values.std(ddof=1) / np.sqrt(n)) if n > 1 else 0.0
     return {
