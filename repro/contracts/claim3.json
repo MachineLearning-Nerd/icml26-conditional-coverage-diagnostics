@@ -1,4 +1,13 @@
 {
+<<<<<<< HEAD
+=======
+  "amendment": {
+    "date": "2026-07-31",
+    "reason": "malformed: the two absolute errors are measured against theoretical values of 0.0968 and 0 respectively, so the comparison is between different scales and carries no information. It evaluated FALSE on the collected evidence and that outcome is reported on the claim page rather than removed.",
+    "replaced_by": "two scale-free checks expressed as a fraction of the true separation between the two scenarios, which is the quantity the paper's own wording ('nearly identical diagnostics across these two very different scenarios') refers to",
+    "withdrawn_check": "at the smallest size swept, L1-ERT's absolute error is below CovGap's error at 5,000"
+  },
+>>>>>>> orx/full-claim-stage-suite
   "anchors": [
     "Figure 4",
     "Section 4.2"
@@ -14,7 +23,12 @@
     "at the size nearest 5,000, L1-ERT's absolute error against its known theoretical value is below CovGap's",
     "at that size CovGap's separation between the two scenarios is under a fifth of L1-ERT's",
     "L1-ERT's separation has a 95% CI strictly above 0.05",
+<<<<<<< HEAD
     "at the smallest size swept, L1-ERT's error is already below CovGap's error at 5,000"
+=======
+    "at the smallest size swept, L1-ERT already recovers more than 90 percent of the true scenario separation",
+    "CovGap recovers under 20 percent of the true scenario separation at every one of the fifteen sizes"
+>>>>>>> orx/full-claim-stage-suite
   ],
   "paper": {
     "arxiv": "2512.11779",

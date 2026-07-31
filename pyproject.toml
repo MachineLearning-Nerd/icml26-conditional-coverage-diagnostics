@@ -15,12 +15,13 @@ dependencies = [
     "numba>=0.60",
     "probmetrics>=1.0.0",
     "pytabkit>=1.5",
-    "tabpfn>=2.0",
+    "tabpfn>=2.0,<3",  # 3.x gates weights behind an interactive browser licence flow
     "tabicl>=0.1.3",
     "requests>=2.32",
     "pyarrow>=17",
     "matplotlib>=3.9",
     "covmetrics",
+    "huggingface-hub",
 ]
 
 [dependency-groups]
