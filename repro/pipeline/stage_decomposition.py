@@ -65,13 +65,21 @@ def _localisation(model_cls, kwargs, x, cover, p_true, alpha) -> dict:
     called_over = predictions > target
     decided = truth_over | truth_under
     agree = (called_over == truth_over)[decided]
+
+    # Three of the four constructions have an empty region by design: `oracle`
+    # sits exactly on the target so neither side exists, `conservative` never
+    # under-covers and `aggressive` never over-covers.  Those agreements are
+    # undefined rather than zero, and are reported as null so that no reader can
+    # mistake "no such region" for "the diagnostic scored 0 there".
     return {
         "n_points": int(len(cover)),
+        "n_truly_over_covered": int(truth_over.sum()),
+        "n_truly_under_covered": int(truth_under.sum()),
         "fraction_truly_over_covered": float(truth_over.mean()),
         "fraction_called_over_covered": float(called_over.mean()),
-        "sign_agreement": float(agree.mean()) if decided.any() else float("nan"),
-        "sign_agreement_on_over": float(called_over[truth_over].mean()) if truth_over.any() else float("nan"),
-        "sign_agreement_on_under": float((~called_over)[truth_under].mean()) if truth_under.any() else float("nan"),
+        "sign_agreement": float(agree.mean()) if decided.any() else None,
+        "sign_agreement_on_over": float(called_over[truth_over].mean()) if truth_over.any() else None,
+        "sign_agreement_on_under": float((~called_over)[truth_under].mean()) if truth_under.any() else None,
         "mean_h": float(predictions.mean()),
     }
 

@@ -1,0 +1,44 @@
+{
+  "amendment": {
+    "date": "2026-07-31",
+    "reason": "malformed: the two absolute errors are measured against theoretical values of 0.0968 and 0 respectively, so the comparison is between different scales and carries no information. It evaluated FALSE on the collected evidence and that outcome is reported on the claim page rather than removed.",
+    "replaced_by": "two scale-free checks expressed as a fraction of the true separation between the two scenarios, which is the quantity the paper's own wording ('nearly identical diagnostics across these two very different scenarios') refers to",
+    "withdrawn_check": "at the smallest size swept, L1-ERT's absolute error is below CovGap's error at 5,000"
+  },
+  "anchors": [
+    "Figure 4",
+    "Section 4.2"
+  ],
+  "claim": "3",
+  "code": {
+    "covmetrics": "a5205aada6a0f39e3812daf087753217ef66b159",
+    "experiments": "39a99dcad92205a15d93f2c5fec40c76540abf1c"
+  },
+  "command": "bash repro/run.sh",
+  "decides_falsified_if": "CovGap separates the two scenarios at least as well as L1-ERT at 5,000 points, or tracks its theoretical value more closely",
+  "decides_verified_if": [
+    "at the size nearest 5,000, L1-ERT's absolute error against its known theoretical value is below CovGap's",
+    "at that size CovGap's separation between the two scenarios is under a fifth of L1-ERT's",
+    "L1-ERT's separation has a 95% CI strictly above 0.05",
+    "at the smallest size swept, L1-ERT already recovers more than 90 percent of the true scenario separation",
+    "CovGap recovers under 20 percent of the true scenario separation at every one of the fifteen sizes"
+  ],
+  "paper": {
+    "arxiv": "2512.11779",
+    "openreview": "vaApZm6MKM",
+    "source_retrieved_utc": "2026-07-31T05:06:34Z",
+    "source_sha256": "1e13e76905dab485726ab80b671ca7140c73e58cdc6001832379f4a349da5a03",
+    "source_url": "https://arxiv.org/html/2512.11779v1"
+  },
+  "quantifiers": {
+    "sample_size_singled_out": 5000,
+    "scenarios": "standard split conformal (conditionally invalid) and oracle quantile sets (conditionally exact)",
+    "sizes_swept": "500 to 100,000, fifteen log-spaced"
+  },
+  "statement": "CovGap remains unreliable and unaligned with its theoretical value even at 5,000 test points, whereas L1-ERT converges with far fewer samples.",
+  "verifier": "uv run --frozen python -m repro.verify --claims <N>",
+  "would_not_count": [
+    "comparing at different sample sizes",
+    "omitting the conditionally exact scenario"
+  ]
+}
