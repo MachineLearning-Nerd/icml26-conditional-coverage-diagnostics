@@ -141,18 +141,6 @@ def verify_claim3() -> ClaimResult:
         required=f"95% CI strictly above {DETECTED}",
     ))
 
-<<<<<<< HEAD
-    smallest = min(sizes)
-    small = raw["summary"]["standard_cp"]["by_size"][str(smallest)]
-    result.checks.append(Check(
-        "converges_with_far_fewer_samples",
-        small["l1_ert_abs_error"]["mean"] < oracle["covgap_abs_error"]["mean"],
-        f"at n={smallest} L1-ERT is already off by only {small['l1_ert_abs_error']['mean']:.5f}, "
-        f"below CovGap's error at n={near_5000}",
-        observed=small["l1_ert_abs_error"]["mean"],
-        required="L1-ERT at the smallest size beats CovGap at ~5,000",
-    ))
-=======
     # "Converges with far fewer samples" is measured in the currency the paper
     # itself uses - how much of the true separation between the two scenarios a
     # metric recovers - because the two metrics' theoretical values live on
@@ -195,7 +183,6 @@ def verify_claim3() -> ClaimResult:
         f"its own truth, L1-ERT's error at n={smallest} is "
         f"{100 * small['l1_ert_abs_error']['mean'] / true_separation:.1f}%."
     )
->>>>>>> orx/full-claim-stage-suite
     return result
 
 
