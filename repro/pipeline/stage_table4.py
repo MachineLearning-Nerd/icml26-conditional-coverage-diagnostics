@@ -227,7 +227,7 @@ def _load(spec: dict, seed: int, root: str = "data/torchvision"):
     return stack(train), stack(calibration), stack(test)
 
 
-def _cell(dataset: str, seed: int, fold_threads: int = 4) -> list[dict]:
+def _cell(dataset: str, seed: int, fold_threads: int = 4, fold_workers: int = 5) -> list[dict]:
     spec = SPECS[dataset]
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -267,7 +267,7 @@ def _cell(dataset: str, seed: int, fold_threads: int = 4) -> list[dict]:
         with Timer() as timer:
             values = ert_pinned_parallel(
                 _FoldFit(spec["in_channels"], spec["image_size"], seed, threads=fold_threads),
-                flat_test, cover, alpha=ALPHA,
+                flat_test, cover, alpha=ALPHA, workers=fold_workers,
             )
         record = {
             "dataset": dataset, "experiment": int(seed), "method": strategy,
@@ -292,18 +292,20 @@ def _cell(dataset: str, seed: int, fold_threads: int = 4) -> list[dict]:
 class _Seed:
     """Picklable seed worker, so whole seeds can run alongside each other.
 
-    A single fold's ERT classifier takes minutes, and only the five folds of one
-    strategy are in flight at a time, so the box sits half idle.  Seeds are
-    independent - their own split, predictor and conformal threshold - so a
-    couple of them running at once fills the machine without widening the fold
-    pool past the point where a 32-row torch batch stops scaling.
+    Seeds are the one axis spread across processes.  Each is self-contained -
+    it reseeds torch and numpy and derives its own split, predictor and
+    conformal threshold - so running all ten at once changes throughput and
+    nothing else.  Its folds then run in-process: parallelising folds as well
+    would mean forking a second time, which torch's OpenMP runtime does not
+    survive, and ten seeds already fill the box.
     """
 
-    def __init__(self, dataset: str, fold_threads: int):
-        self.dataset, self.fold_threads = dataset, fold_threads
+    def __init__(self, dataset: str, fold_threads: int, fold_workers: int):
+        self.dataset, self.fold_threads, self.fold_workers = dataset, fold_threads, fold_workers
 
     def __call__(self, seed: int) -> list[dict]:
-        return _cell(self.dataset, seed, fold_threads=self.fold_threads)
+        return _cell(self.dataset, seed, fold_threads=self.fold_threads,
+                     fold_workers=self.fold_workers)
 
 
 def _download(spec: dict, root: str = "data/torchvision") -> None:
@@ -320,12 +322,16 @@ def run(config: dict) -> dict:
     datasets = list(config.get("datasets", SPECS))
     seeds = list(config.get("seeds", range(10)))
     fold_threads = int(config.get("fold_threads", 8))
-    seed_workers = int(config.get("seed_workers", 2))
+    seed_workers = int(config.get("seed_workers", 10))
+    # Exactly one axis is spread across processes.  When seeds are the parallel
+    # axis the folds stay in-process, because torch's OpenMP runtime does not
+    # survive a second fork level.
+    fold_workers = 1 if seed_workers > 1 else int(config.get("fold_workers", 5))
 
     rows: list[dict] = []
     for dataset in datasets:
         _download(SPECS[dataset])
-        worker = _Seed(dataset, fold_threads)
+        worker = _Seed(dataset, fold_threads, fold_workers)
         if seed_workers <= 1:
             for seed in seeds:
                 rows.extend(worker(seed))
