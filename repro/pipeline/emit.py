@@ -48,6 +48,19 @@ def artifact(relative_path: str, value: object) -> str:
     return digest
 
 
+ROW = "<<<ORX-ROW"
+
+
+def row(tag: str, value: object) -> None:
+    """One result record, emitted as it is produced.
+
+    Long runs stream rows so a job that is cut short still leaves every result
+    it finished in the log, rather than only the final aggregate.
+    """
+    sys.stdout.write(f"{ROW} {tag}>>>{canonical(value)}\n")
+    sys.stdout.flush()
+
+
 def note(message: str) -> None:
     sys.stdout.write(f"[repro] {message}\n")
     sys.stdout.flush()
