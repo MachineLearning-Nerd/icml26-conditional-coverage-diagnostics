@@ -174,7 +174,16 @@ def ert_pinned_parallel(fit_predict, x, cover, alpha=0.1, n_splits=5, random_sta
 
 
 def mean_and_sem(values) -> dict:
-    values = np.asarray(values, dtype=float)
+    # A None marks a quantity that is undefined for that seed - an agreement
+    # rate over an empty region, say.  Those seeds are dropped and counted
+    # rather than being read as zeros; if every seed is undefined the summary
+    # says so instead of inventing a mean.
+    defined = [v for v in values if v is not None]
+    if not defined:
+        return {"mean": None, "std": None, "sem": None, "n": 0,
+                "n_undefined": len(list(values)),
+                "ci95_low": None, "ci95_high": None}
+    values = np.asarray(defined, dtype=float)
     n = len(values)
     sem = float(values.std(ddof=1) / np.sqrt(n)) if n > 1 else 0.0
     return {
