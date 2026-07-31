@@ -14,5 +14,19 @@ export PYTHONUNBUFFERED=1
 export PYTHONHASHSEED=0
 export TOKENIZERS_PARALLELISM=false
 
+# The Hugging Face CPU job image ships python but not uv, so bootstrap the
+# environment manager itself before it takes over dependency resolution.  Only
+# uv is installed this way; every project dependency comes from uv.lock.
+if ! command -v uv >/dev/null 2>&1; then
+  export PATH="$HOME/.local/bin:$PATH"
+  if ! command -v uv >/dev/null 2>&1; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 \
+      || python3 -m pip install --quiet --disable-pip-version-check uv
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+fi
+uv --version
+
+uv python install 3.11
 uv sync --frozen --no-progress
 exec uv run --frozen --no-sync python -m repro.pipeline
