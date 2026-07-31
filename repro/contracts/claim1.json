@@ -1,0 +1,37 @@
+{
+  "anchors": [
+    "Section 3.1",
+    "Table 1",
+    "the sentence Algorithm 1 rests on"
+  ],
+  "claim": "1",
+  "code": {
+    "covmetrics": "a5205aada6a0f39e3812daf087753217ef66b159",
+    "experiments": "39a99dcad92205a15d93f2c5fec40c76540abf1c"
+  },
+  "command": "bash repro/run.sh",
+  "decides_falsified_if": "some (t,p) in the unit square gives a strictly negative divergence for a proper score, or a classifier attains mean L1-ERT below -0.01 with a 95% CI strictly below 0 on the exactly-conditional construction",
+  "decides_verified_if": [
+    "the divergence d_l(t,p) induced by each proper score is non-negative over the complete (t,p) unit square at >= 1e6 grid points and agrees with its closed form to < 1e-4",
+    "on an exactly conditionally valid construction at 50,000 test points over ten seeds, every one of the five CPU Table-2 classifiers gives |mean L1-ERT| < 0.01 with a 95% CI containing 0",
+    "the negative control (standard split conformal, conditionally invalid) gives mean L1-ERT > 0.05 with a 95% CI strictly above 0"
+  ],
+  "paper": {
+    "arxiv": "2512.11779",
+    "openreview": "vaApZm6MKM",
+    "source_retrieved_utc": "2026-07-31T05:06:34Z",
+    "source_sha256": "1e13e76905dab485726ab80b671ca7140c73e58cdc6001832379f4a349da5a03",
+    "source_url": "https://arxiv.org/html/2512.11779v1"
+  },
+  "quantifiers": {
+    "assumption": "P(Y in C_alpha(X) | X = x) = 1 - alpha for almost every x",
+    "universal_over": "all measurable classifiers h: X -> [0,1] and the three proper scores L1, Brier, logloss"
+  },
+  "statement": "No classifier can achieve a lower risk than the constant 1-alpha predictor under conditional coverage, for a proper score.",
+  "verifier": "uv run --frozen python -m repro.verify --claims <N>",
+  "would_not_count": [
+    "a construction whose conditional coverage is not exactly 1-alpha",
+    "an in-sample estimate, which overfits and is not the paper's estimator",
+    "checking only classifiers that happen to be weak"
+  ]
+}
