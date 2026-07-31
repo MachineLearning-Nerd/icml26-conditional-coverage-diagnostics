@@ -1,0 +1,6 @@
+{
+  "stages": ["smoke"],
+  "params": {
+    "smoke": {"n_points": 3000, "methods": ["PartitionWise", "XT"]}
+  }
+}
