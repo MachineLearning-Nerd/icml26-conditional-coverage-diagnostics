@@ -158,9 +158,17 @@ def ert_pinned_parallel(fit_predict, x, cover, alpha=0.1, n_splits=5, random_sta
     global _FOLD_DATA
     _FOLD_DATA = (x, cover)
     try:
-        context = mp.get_context("fork")
-        with ProcessPoolExecutor(max_workers=min(workers, len(folds)), mp_context=context) as pool:
-            predictions = list(pool.map(fit_predict, folds))
+        if workers <= 1:
+            # Callers that already fan out over a coarser axis ask for one
+            # worker and get the folds in-process.  A one-worker pool would
+            # still be a second fork level, and torch's OpenMP runtime does not
+            # survive that: nesting the pools deadlocks before the first fold.
+            predictions = [fit_predict(fold) for fold in folds]
+        else:
+            context = mp.get_context("fork")
+            with ProcessPoolExecutor(max_workers=min(workers, len(folds)),
+                                     mp_context=context) as pool:
+                predictions = list(pool.map(fit_predict, folds))
     finally:
         _FOLD_DATA = None
 
