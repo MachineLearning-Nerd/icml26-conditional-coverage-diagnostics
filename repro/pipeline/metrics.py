@@ -18,16 +18,6 @@ from covmetrics.losses import (
     logloss, logloss_over, logloss_under,
 )
 
-_FOLD_DATA: tuple | None = None
-
-
-def fold_data():
-    """The (x, cover) pair a forked fold worker should read instead of receiving."""
-    if _FOLD_DATA is None:
-        raise RuntimeError("fold data is only available inside a forked fold worker")
-    return _FOLD_DATA
-
-
 ALL_LOSSES = (
     brier_score, logloss, L1_miscoverage,
     brier_score_over, L1_miscoverage_over, logloss_over,
@@ -131,44 +121,33 @@ def ert_independent(fit_predict, x, cover, alpha=0.1, n_splits=5, random_state=4
     return {name: float(np.mean(values)) for name, values in folds.items()}
 
 
-def ert_pinned_parallel(fit_predict, x, cover, alpha=0.1, n_splits=5, random_state=42,
-                        workers=5) -> dict:
-    """Identical to `ert_pinned`, with the fold fits spread across processes.
+def ert_pinned_predictions(fit_predict, x, cover, alpha=0.1, n_splits=5, random_state=42) -> dict:
+    """`ert_pinned` for callers that must supply their own fold fitting.
 
-    Only the classifier fits move; the folds come from the same
-    `KFold(shuffle=True, random_state=42)` covmetrics uses (verified index by
-    index in Claim 6's partition audit) and each fold's metric values come from
-    covmetrics' own `evaluate_with_predictions`.  For image covariates the fits
-    dominate the cost by orders of magnitude, and a 64-vCPU box cannot use that
-    width inside a 32-row batch.
+    Image covariates need a torch classifier that covmetrics cannot construct
+    for itself, so the caller passes `fit_predict(x_train, cover_train, x_test)
+    -> probabilities`.  The folds are the same
+    `KFold(shuffle=True, random_state=42)` covmetrics uses - verified index by
+    index in Claim 6's partition audit - and every metric value still comes from
+    covmetrics' own `evaluate_with_predictions`, so this stays the pinned
+    package's arithmetic rather than a second implementation of it.
+
+    Folds run in this process.  Callers that want concurrency fan out over a
+    coarser axis, which is both wider and free of the fork-based worker pool
+    that torch's autograd refuses to run in.
     """
-    import multiprocessing as mp
-    from concurrent.futures import ProcessPoolExecutor
-
     from covmetrics.ERT import evaluate_with_predictions
 
     x = np.asarray(x, dtype=np.float32)
     cover = np.asarray(cover, dtype=np.int64)
     folds = list(KFold(n_splits=n_splits, shuffle=True, random_state=random_state).split(x))
 
-    # Image covariates run to hundreds of megabytes, and shipping a copy of the
-    # fit and score matrices to each worker costs more than the fits.  The data
-    # is published to a module global first and the workers are forked from it,
-    # so only the fold indices cross the process boundary.
-    global _FOLD_DATA
-    _FOLD_DATA = (x, cover)
-    try:
-        context = mp.get_context("fork")
-        with ProcessPoolExecutor(max_workers=min(workers, len(folds)), mp_context=context) as pool:
-            predictions = list(pool.map(fit_predict, folds))
-    finally:
-        _FOLD_DATA = None
-
     values = {f"ERT_{loss.__name__}": [] for loss in ALL_LOSSES}
-    for (_, test), prediction in zip(folds, predictions):
+    for train_index, test_index in folds:
+        prediction = fit_predict(x[train_index], cover[train_index], x[test_index])
         for loss in ALL_LOSSES:
             values[f"ERT_{loss.__name__}"].append(
-                float(evaluate_with_predictions(prediction, cover[test], alpha, loss=loss))
+                float(evaluate_with_predictions(prediction, cover[test_index], alpha, loss=loss))
             )
     return {key: float(np.mean(v)) for key, v in values.items()}
 
