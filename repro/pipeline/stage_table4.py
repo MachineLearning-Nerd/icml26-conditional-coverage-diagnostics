@@ -41,7 +41,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .emit import artifact, note, row
-from .metrics import ert_pinned_parallel
+from .metrics import ert_pinned_predictions
 from .provenance import Timer
 
 ALPHA = 0.1
@@ -167,18 +167,13 @@ class BinaryImageClassifier(nn.Module):
 
 
 class _FoldFit:
-    """Picklable fold worker: fit a fresh ERT classifier and score the held-out rows."""
+    """Fit a fresh ERT classifier on one fold and score the held-out rows."""
 
     def __init__(self, in_channels: int, image_size: int, seed: int, threads: int = 4):
         self.in_channels, self.image_size, self.seed, self.threads = \
             in_channels, image_size, seed, threads
 
-    def __call__(self, fold):
-        from .metrics import fold_data
-
-        train_index, test_index = fold
-        x, cover = fold_data()
-        x_train, cover_train, x_test = x[train_index], cover[train_index], x[test_index]
+    def __call__(self, x_train, cover_train, x_test):
         torch.set_num_threads(self.threads)
         model = BinaryImageClassifier(self.in_channels, self.image_size, seed=self.seed)
         model.fit(x_train, cover_train)
@@ -265,7 +260,7 @@ def _cell(dataset: str, seed: int, fold_threads: int = 4) -> list[dict]:
         sizes = set_sizes(probabilities_test, threshold, strategy)
 
         with Timer() as timer:
-            values = ert_pinned_parallel(
+            values = ert_pinned_predictions(
                 _FoldFit(spec["in_channels"], spec["image_size"], seed, threads=fold_threads),
                 flat_test, cover, alpha=ALPHA,
             )
@@ -292,11 +287,12 @@ def _cell(dataset: str, seed: int, fold_threads: int = 4) -> list[dict]:
 class _Seed:
     """Picklable seed worker, so whole seeds can run alongside each other.
 
-    A single fold's ERT classifier takes minutes, and only the five folds of one
-    strategy are in flight at a time, so the box sits half idle.  Seeds are
-    independent - their own split, predictor and conformal threshold - so a
-    couple of them running at once fills the machine without widening the fold
-    pool past the point where a 32-row torch batch stops scaling.
+    Seeds are the one axis spread across processes.  Each is self-contained -
+    it reseeds torch and numpy, derives its own split, predictor and conformal
+    threshold, and reads the dataset from disk itself - so running all ten at
+    once changes throughput and nothing else, and nothing bulky has to cross
+    the process boundary.  Its folds then run in-process, since ten seeds
+    already fill the box.
     """
 
     def __init__(self, dataset: str, fold_threads: int):
@@ -320,7 +316,7 @@ def run(config: dict) -> dict:
     datasets = list(config.get("datasets", SPECS))
     seeds = list(config.get("seeds", range(10)))
     fold_threads = int(config.get("fold_threads", 8))
-    seed_workers = int(config.get("seed_workers", 2))
+    seed_workers = int(config.get("seed_workers", 10))
 
     rows: list[dict] = []
     for dataset in datasets:
@@ -330,7 +326,14 @@ def run(config: dict) -> dict:
             for seed in seeds:
                 rows.extend(worker(seed))
         else:
-            context = mp.get_context("fork")
+            # spawn, not fork: torch refuses to run autograd in a fork-based
+            # child once autograd's threads exist in the parent ("Unable to
+            # handle autograd's threading in combination with fork-based
+            # multiprocessing"), and on Linux that shows up as a silent
+            # deadlock rather than an error.  A spawned child is a fresh
+            # interpreter, and each seed loads its own data anyway, so the only
+            # cost is re-importing torch.
+            context = mp.get_context("spawn")
             with ProcessPoolExecutor(max_workers=min(seed_workers, len(seeds)),
                                      mp_context=context) as pool:
                 for records in pool.map(worker, seeds):
