@@ -41,7 +41,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .emit import artifact, note, row
-from .metrics import ert_pinned
+from .metrics import ert_pinned_parallel
 from .provenance import Timer
 
 ALPHA = 0.1
@@ -166,6 +166,25 @@ class BinaryImageClassifier(nn.Module):
         return np.column_stack([1.0 - p, p])
 
 
+class _FoldFit:
+    """Picklable fold worker: fit a fresh ERT classifier and score the held-out rows."""
+
+    def __init__(self, in_channels: int, image_size: int, seed: int, threads: int = 4):
+        self.in_channels, self.image_size, self.seed, self.threads = \
+            in_channels, image_size, seed, threads
+
+    def __call__(self, fold):
+        from .metrics import fold_data
+
+        train_index, test_index = fold
+        x, cover = fold_data()
+        x_train, cover_train, x_test = x[train_index], cover[train_index], x[test_index]
+        torch.set_num_threads(self.threads)
+        model = BinaryImageClassifier(self.in_channels, self.image_size, seed=self.seed)
+        model.fit(x_train, cover_train)
+        return model.predict_proba(x_test)[:, 1]
+
+
 def negative_likelihood_scores(probabilities: np.ndarray, labels: np.ndarray) -> np.ndarray:
     """sadinle2019: S(X, Y) = -p(X)_Y."""
     return -probabilities[np.arange(len(labels)), labels]
@@ -208,7 +227,7 @@ def _load(spec: dict, seed: int, root: str = "data/torchvision"):
     return stack(train), stack(calibration), stack(test)
 
 
-def _cell(dataset: str, seed: int) -> list[dict]:
+def _cell(dataset: str, seed: int, fold_threads: int = 4) -> list[dict]:
     spec = SPECS[dataset]
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -246,9 +265,8 @@ def _cell(dataset: str, seed: int) -> list[dict]:
         sizes = set_sizes(probabilities_test, threshold, strategy)
 
         with Timer() as timer:
-            values = ert_pinned(
-                BinaryImageClassifier,
-                dict(in_channels=spec["in_channels"], image_size=spec["image_size"], seed=seed),
+            values = ert_pinned_parallel(
+                _FoldFit(spec["in_channels"], spec["image_size"], seed, threads=fold_threads),
                 flat_test, cover, alpha=ALPHA,
             )
         record = {
@@ -271,17 +289,52 @@ def _cell(dataset: str, seed: int) -> list[dict]:
     return records
 
 
+class _Seed:
+    """Picklable seed worker, so whole seeds can run alongside each other.
+
+    A single fold's ERT classifier takes minutes, and only the five folds of one
+    strategy are in flight at a time, so the box sits half idle.  Seeds are
+    independent - their own split, predictor and conformal threshold - so a
+    couple of them running at once fills the machine without widening the fold
+    pool past the point where a 32-row torch batch stops scaling.
+    """
+
+    def __init__(self, dataset: str, fold_threads: int):
+        self.dataset, self.fold_threads = dataset, fold_threads
+
+    def __call__(self, seed: int) -> list[dict]:
+        return _cell(self.dataset, seed, fold_threads=self.fold_threads)
+
+
+def _download(spec: dict, root: str = "data/torchvision") -> None:
+    """Fetch the dataset once, before any fork, so workers never race on it."""
+    import torchvision
+
+    getattr(torchvision.datasets, spec["torchvision"])(root=root, train=True, download=True)
+
+
 def run(config: dict) -> dict:
+    import multiprocessing as mp
+    from concurrent.futures import ProcessPoolExecutor
+
     datasets = list(config.get("datasets", SPECS))
     seeds = list(config.get("seeds", range(10)))
-    threads = int(config.get("torch_threads", 0))
-    if threads:
-        torch.set_num_threads(threads)
+    fold_threads = int(config.get("fold_threads", 8))
+    seed_workers = int(config.get("seed_workers", 2))
 
     rows: list[dict] = []
     for dataset in datasets:
-        for seed in seeds:
-            rows.extend(_cell(dataset, seed))
+        _download(SPECS[dataset])
+        worker = _Seed(dataset, fold_threads)
+        if seed_workers <= 1:
+            for seed in seeds:
+                rows.extend(worker(seed))
+        else:
+            context = mp.get_context("fork")
+            with ProcessPoolExecutor(max_workers=min(seed_workers, len(seeds)),
+                                     mp_context=context) as pool:
+                for records in pool.map(worker, seeds):
+                    rows.extend(records)
 
     result = {"claim": "5", "protocol": {
         "alpha": ALPHA, "specs": {k: SPECS[k] for k in datasets}, "seeds": seeds,

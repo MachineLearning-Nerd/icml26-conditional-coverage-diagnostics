@@ -93,11 +93,71 @@ def test_sizes(n_test: int) -> list[int]:
     return np.round(np.logspace(np.log10(300), np.log10(n_test), N_SIZES)).astype(int).tolist()
 
 
+class _Experiment:
+    """One (dataset, experiment) cell, run start to finish in its own process.
+
+    Experiments are fully independent - their own split, their own predictor,
+    their own subsamples - and the RealMLP predictor takes about twenty minutes
+    per experiment on this hardware, so running several at once is the
+    difference between a job that fits its timeout and one that does not.
+    Threads stay capped inside each worker so the total stays near the core
+    count.
+    """
+
+    def __init__(self, dataset: str, methods: list[str], size_limit, threads: int):
+        self.dataset, self.methods, self.size_limit, self.threads = \
+            dataset, methods, size_limit, threads
+
+    def __call__(self, experiment: int) -> list[dict]:
+        import torch
+        torch.set_num_threads(self.threads)
+
+        features, targets = _DATASET_CACHE[self.dataset]
+        np.random.seed(experiment)
+        fitted = split_and_conformalize(features, targets, experiment)
+        note(f"table2 {self.dataset} exp={experiment} split="
+             f"{fitted['n_train']}/{fitted['n_calibration']}/{fitted['n_test']} "
+             f"coverage={fitted['marginal_coverage']:.4f} "
+             f"predictor={fitted['predictor_fit_s']}s")
+
+        sizes = test_sizes(fitted["n_test"])
+        if self.size_limit:
+            sizes = [s for s in sizes if s <= int(self.size_limit)]
+
+        records = []
+        for size in sizes:
+            # The release draws each subsample from the global numpy RNG, seeded
+            # once per experiment, so the draw order is preserved.
+            idx = np.random.choice(fitted["n_test"], size=size, replace=False)
+            x_subset, cover_subset = fitted["x_test"][idx], fitted["cover"][idx]
+            for method in self.methods:
+                model_cls, kwargs = method_spec(method, fitted["n_test"])
+                with Timer() as timer:
+                    values = ert_pinned(model_cls, kwargs, x_subset, cover_subset, alpha=ALPHA)
+                record = {"dataset": self.dataset, "experiment": int(experiment),
+                          "nsamples": int(size), "method": method,
+                          "time": round(timer.wall_s, 4),
+                          "marginal_coverage": fitted["marginal_coverage"], **values}
+                records.append(record)
+                row("table2", record)
+                note(f"table2 {self.dataset} exp={experiment} n={size} {method} "
+                     f"L1-ERT={values['ERT_L1_miscoverage']:+.6f} ({timer.wall_s:.1f}s)")
+        return records
+
+
+_DATASET_CACHE: dict[str, tuple] = {}
+
+
 def run(config: dict) -> dict:
+    import multiprocessing as mp
+    from concurrent.futures import ProcessPoolExecutor
+
     datasets = list(config.get("datasets", data.TABLE2_DATASETS))
     experiments = list(config.get("experiments", range(10)))
     methods = list(config.get("methods", ALL_METHODS))
     size_limit = config.get("max_test_size")
+    workers = int(config.get("experiment_workers", 5))
+    threads = int(config.get("worker_threads", 8))
 
     rows: list[dict] = []
     integrity: dict[str, dict] = {}
@@ -106,38 +166,18 @@ def run(config: dict) -> dict:
         integrity[name] = loaded["integrity"]
         note(f"table2 dataset={name} {loaded['integrity']['rows']} rows "
              f"(Appendix H {loaded['integrity']['appendix_h_rows']})")
-        features = data.encode(loaded["x"])
-        targets = loaded["y"].to_numpy()
+        _DATASET_CACHE[name] = (data.encode(loaded["x"]), loaded["y"].to_numpy())
 
-        for experiment in experiments:
-            np.random.seed(experiment)
-            fitted = split_and_conformalize(features, targets, experiment)
-            note(f"table2 {name} exp={experiment} split="
-                 f"{fitted['n_train']}/{fitted['n_calibration']}/{fitted['n_test']} "
-                 f"coverage={fitted['marginal_coverage']:.4f} "
-                 f"predictor={fitted['predictor_fit_s']}s")
-
-            sizes = test_sizes(fitted["n_test"])
-            if size_limit:
-                sizes = [s for s in sizes if s <= int(size_limit)]
-            for size in sizes:
-                # The release draws each subsample from the global numpy RNG,
-                # seeded once per experiment, so the draw order is preserved.
-                idx = np.random.choice(fitted["n_test"], size=size, replace=False)
-                x_subset = fitted["x_test"][idx]
-                cover_subset = fitted["cover"][idx]
-                for method in methods:
-                    model_cls, kwargs = method_spec(method, fitted["n_test"])
-                    with Timer() as timer:
-                        values = ert_pinned(model_cls, kwargs, x_subset, cover_subset, alpha=ALPHA)
-                    record = {"dataset": name, "experiment": int(experiment), "nsamples": int(size),
-                              "method": method, "time": round(timer.wall_s, 4),
-                              "marginal_coverage": fitted["marginal_coverage"],
-                              **values}
-                    rows.append(record)
-                    row("table2", record)
-                    note(f"table2 {name} exp={experiment} n={size} {method} "
-                         f"L1-ERT={values['ERT_L1_miscoverage']:+.6f} ({timer.wall_s:.1f}s)")
+        worker = _Experiment(name, methods, size_limit, threads)
+        if workers <= 1:
+            for experiment in experiments:
+                rows.extend(worker(experiment))
+        else:
+            context = mp.get_context("fork")
+            with ProcessPoolExecutor(max_workers=min(workers, len(experiments)),
+                                     mp_context=context) as pool:
+                for records in pool.map(worker, experiments):
+                    rows.extend(records)
 
     result = {"claim": "2", "protocol": {
         "alpha": ALPHA, "split": "40/10/50", "predictor": "RealMLP_TD_S_Regressor(n_cv=5, "

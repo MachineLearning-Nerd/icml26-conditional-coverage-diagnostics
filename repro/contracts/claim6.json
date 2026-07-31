@@ -1,0 +1,44 @@
+{
+  "anchors": [
+    "Algorithm 1"
+  ],
+  "claim": "6",
+  "code": {
+    "covmetrics": "a5205aada6a0f39e3812daf087753217ef66b159",
+    "experiments": "39a99dcad92205a15d93f2c5fec40c76540abf1c"
+  },
+  "command": "bash repro/run.sh",
+  "decides_falsified_if": "the estimator does not cross-fit, or cross-fitting fails to remove the spurious violation, or the no-cross-fitting arm shows no inflation and the cross-validation therefore has no purpose",
+  "decides_verified_if": [
+    "the folds the released estimator hands the classifier reproduce an independent KFold index for index, are disjoint, cover every row once, and never overlap their own fit set",
+    "without cross-fitting, exactly-conditional data reads mean L1-ERT above 0.02 at every size, which is a spurious violation",
+    "with five-fold cross-fitting the same data reads |mean L1-ERT| below 0.01 and at least five times smaller",
+    "the same holds for k in {2,3,5,10}"
+  ],
+  "paper": {
+    "arxiv": "2512.11779",
+    "openreview": "vaApZm6MKM",
+    "source_retrieved_utc": "2026-07-31T05:06:34Z",
+    "source_sha256": "1e13e76905dab485726ab80b671ca7140c73e58cdc6001832379f4a349da5a03",
+    "source_url": "https://arxiv.org/html/2512.11779v1"
+  },
+  "quantifiers": {
+    "construction": "oracle quantile sets, whose true ERT is exactly 0",
+    "k_values_swept": [
+      2,
+      3,
+      5,
+      10
+    ],
+    "sizes_swept": [
+      2000,
+      10000,
+      50000
+    ]
+  },
+  "statement": "Algorithm 1 estimates the ERT metrics from finite samples using k-fold cross-validation to avoid overfitting the classifier used in the estimation.",
+  "verifier": "uv run --frozen python -m repro.verify --claims <N>",
+  "would_not_count": [
+    "reading ert_folds=5 out of a configuration record, which shows the setting and not its effect"
+  ]
+}
