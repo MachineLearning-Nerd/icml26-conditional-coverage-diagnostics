@@ -14,6 +14,15 @@ export PYTHONUNBUFFERED=1
 export PYTHONHASHSEED=0
 export TOKENIZERS_PARALLELISM=false
 
+# The job box exposes 64 vCPUs.  Small-batch torch training (RealMLP's 256-row
+# batches, the image ERT classifier's 32-row batches) spends more time in
+# intra-op thread synchronisation than in arithmetic at that width, so the
+# per-process thread count is capped and parallelism is taken across
+# independent work items instead.  The paper's own CPU hardware was 8 and 16
+# cores, so this is also closer to the reported setup.
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
+export MKL_NUM_THREADS="${MKL_NUM_THREADS:-8}"
+
 # The Hugging Face CPU job image ships python but not uv, so bootstrap the
 # environment manager itself before it takes over dependency resolution.  Only
 # uv is installed this way; every project dependency comes from uv.lock.
