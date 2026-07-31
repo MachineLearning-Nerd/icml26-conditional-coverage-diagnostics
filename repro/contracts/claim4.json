@@ -1,0 +1,37 @@
+{
+  "anchors": [
+    "Section 3.3"
+  ],
+  "claim": "4",
+  "code": {
+    "covmetrics": "a5205aada6a0f39e3812daf087753217ef66b159",
+    "experiments": "39a99dcad92205a15d93f2c5fec40c76540abf1c"
+  },
+  "command": "bash repro/run.sh",
+  "decides_falsified_if": "the decomposition is not additive, or a strictly one-sided construction produces a non-negligible component on the wrong side, or the sign agreement is no better than chance",
+  "decides_verified_if": [
+    "l-ERT equals l+-ERT plus l--ERT to below 1e-9 on every produced value for all three scores",
+    "on a strictly over-covering construction the positive part has a 95% CI above 0.025 and the negative part is below 0.01, and symmetrically for a strictly under-covering one",
+    "on the two-sided construction both parts are strictly positive",
+    "sign(h(x) - (1-alpha)) agrees with sign(p(x) - (1-alpha)) on more than 75% of points, with p(x) known in closed form",
+    "the exactly-conditional control shows neither component above 0.01"
+  ],
+  "paper": {
+    "arxiv": "2512.11779",
+    "openreview": "vaApZm6MKM",
+    "source_retrieved_utc": "2026-07-31T05:06:34Z",
+    "source_sha256": "1e13e76905dab485726ab80b671ca7140c73e58cdc6001832379f4a349da5a03",
+    "source_url": "https://arxiv.org/html/2512.11779v1"
+  },
+  "quantifiers": {
+    "alpha": 0.1,
+    "scale": "50,000 test points per seed, ten seeds",
+    "scores": "L1, Brier and logloss"
+  },
+  "statement": "The metrics decompose conditional coverage error into asymmetric l+-ERT and l--ERT components, separating unnecessary conservatism from excessive aggressiveness.",
+  "verifier": "uv run --frozen python -m repro.verify --claims <N>",
+  "would_not_count": [
+    "hand-built prediction vectors instead of prediction sets from a conformal construction",
+    "a construction whose miscoverage is a constant marginal shift, where no localisation is being tested"
+  ]
+}
