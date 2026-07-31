@@ -28,6 +28,18 @@ CLAIM_TITLES = {
     "6": "Claim 6 - Algorithm 1 cross-validation",
 }
 
+# One line per page for the index table, so a reader choosing where to start
+# knows what each page will and will not settle.
+PAGE_DESCRIPTIONS = {
+    "current-verification": "Every claim's verdict, the command that reproduces it, and the pinned environment.",
+    "claim-1": "Under exact conditional coverage no classifier beats the constant target: exhaustive population sweep plus a full-scale arm and a negative control.",
+    "claim-2": "Whether L1-ERT reproduces Table 2's relative-power percentages for the seven benchmark classifiers.",
+    "claim-3": "L1-ERT separates coverage scenarios at sample sizes where CovGap cannot, across fifteen sizes to 100,000.",
+    "claim-4": "l-ERT splits exactly into its over- and under-coverage parts, and each part isolates the region it names.",
+    "claim-5": "Whether the Table-4 classification runs reproduce the KL+/KL- divergence between conformal strategies.",
+    "claim-6": "Algorithm 1's cross-fitting is what keeps ERT honest, shown against a no-cross-fitting control.",
+}
+
 SOURCE_FILES = {
     "1": ["repro/pipeline/stage_principle.py", "repro/pipeline/synthetic.py"],
     "2": ["repro/pipeline/stage_table2.py", "repro/pipeline/classifiers.py",
@@ -206,11 +218,20 @@ def _claim4_results(raw: dict) -> str:
             "regions of aggressiveness - can be scored directly.", "",
             "| Construction | sign agreement | on truly over-covered x | on truly under-covered x |",
             "| --- | ---: | ---: | ---: |"]
+    def agreement(entry: dict) -> str:
+        # An empty region has no agreement rate.  `conservative` never
+        # under-covers and `aggressive` never over-covers, so one column of each
+        # row is undefined rather than zero, and saying so beats printing a
+        # number the run never measured.
+        if entry["mean"] is None:
+            return "n/a - region empty by construction"
+        return f"{entry['mean']:.4f}"
+
     for name in ("standard_cp", "conservative", "aggressive"):
         loc = raw["summary"][name]["localisation"]
-        out.append(f"| `{name}` | {loc['sign_agreement']['mean']:.4f} | "
-                   f"{loc['sign_agreement_on_over']['mean']:.4f} | "
-                   f"{loc['sign_agreement_on_under']['mean']:.4f} |")
+        out.append(f"| `{name}` | {agreement(loc['sign_agreement'])} | "
+                   f"{agreement(loc['sign_agreement_on_over'])} | "
+                   f"{agreement(loc['sign_agreement_on_under'])} |")
     return "\n".join(out)
 
 
@@ -358,13 +379,66 @@ LIMITATIONS = {
           "The paper says early stopping was used 'when the accuracy fell below 1-alpha'. The "
           "release drivers instead fix an epoch count per dataset (1, 5 and 10). The release "
           "code is followed and the resulting accuracy is reported per cell.",
-          "The five ERT folds are fitted in separate processes. The fold split and every metric "
-          "evaluation still come from covmetrics; only the location of the fits changes."],
+          "The ERT folds are fitted in this process and whole seeds run in parallel instead. "
+          "The fold split and every metric evaluation still come from covmetrics."],
     "6": ["The partition audit uses an instrumented constant predictor so the folds can be "
           "recorded exactly; the overfitting audit uses the paper's default classifier.",
           "The no-cross-fitting arm is an in-sample estimator built here as a control. It is "
           "not something the paper proposes."],
 }
+
+BLOCKED_DETAIL = {
+    "2": {
+        "reason": "The full seven-method protocol was implemented, launched at full scale and "
+                  "did not return evidence in time. It is blocked on compute, not on method: "
+                  "no number is reported here because none was measured, and the five CPU "
+                  "methods alone would be a different and strictly larger statistic that "
+                  "cannot be compared to the paper's 68.4 and 38.3.",
+        "routes": [
+            "The undocumented Table-2 percentage was recovered from the release notebook and "
+            "validated against the authors' own committed results.csv, reproducing all seven "
+            "published values to within 0.95 points. That fixes the statistic but is "
+            "calibration against the authors' numbers, not independent evidence.",
+            "TabPFN 3.x could not be used at all: it gates its weights behind a one-time "
+            "interactive browser licence an unattended job cannot pass. Pinning to the 2.x "
+            "line, which is where the paper's RealTabPFN-2.5 sits, made both foundation "
+            "models reachable.",
+            "Their cost was then measured rather than guessed: TabPFN 0.1055 n^1.102 and "
+            "TabICL 0.1599 n^0.841 seconds, fitted on three points and confirmed by "
+            "predicting 216 s at n=985 against 208 s observed. That puts the two models at "
+            "2.6 CPU-hours per experiment on superconductivity and 5.1-5.9 on the three "
+            "larger datasets.",
+            "Eight shards were run at that size and produced no completed experiment: not one "
+            "RealMLP predictor finished in five hours against 750 s measured serially, which "
+            "contention does not explain, and the jobs were then killed externally.",
+        ],
+        "unblock": "A diagnosis of the RealMLP stall under spawned workers, and roughly 55 "
+                   "CPU-box-hours to carry the four datasets x ten experiments x ten sizes x "
+                   "seven methods to completion.",
+    },
+    "5": {
+        "reason": "Three of Table 4's four datasets were implemented and launched at full "
+                  "scale. Every seed finished its predictor, but no ERT cell completed before "
+                  "the runs were killed, so there is no measurement to report.",
+        "routes": [
+            "The release's own per-dataset drivers were transcribed rather than reinvented, "
+            "including their fixed epoch counts and the exact over/under field mapping that "
+            "Table 4's KL+ and KL- correspond to.",
+            "A first arrangement fitted the five ERT folds in parallel processes. It never "
+            "completed a single cell: torch refuses to run autograd in a fork-based child, "
+            "and on Linux that is a silent deadlock rather than an error.",
+            "Rewriting the stage to spawn one worker per seed, with folds in-process, did "
+            "reach real work - all ten MNIST seeds trained their predictors, accuracies 0.796 "
+            "to 0.851 - but the paper's ERT classifier trains ten epochs over roughly 36,000 "
+            "images per fold, ten fold-fits per seed, and no cell finished within five hours.",
+        ],
+        "unblock": "Enough CPU-hours for ten seeds x two strategies x five folds of the "
+                   "paper's own ERT classifier on each dataset, or a disclosed reduction in "
+                   "seeds. CIFAR100 stays out of reach regardless: its driver trains a "
+                   "ResNet-18 for 35 epochs inside every fold.",
+    },
+}
+
 
 BLOCKED_TEMPLATE = """
 This claim is **BLOCKED**, not verified and not falsified.
@@ -429,6 +503,15 @@ def write_pages(out: Path, artifacts: Path, repo_root: Path = Path(".")) -> list
             raw = json.loads((artifacts / renderer[0]).read_text())
             body.append(_cell("## Results\n\n" + renderer[1](raw),
                               f"claim{claim}_results", "Raw numerical results, inline"))
+
+        if result["verdict"] == "BLOCKED":
+            detail = BLOCKED_DETAIL[claim]
+            body.append(_cell(
+                "## Why this claim is blocked\n" + BLOCKED_TEMPLATE.format(
+                    reason=detail["reason"],
+                    routes="\n".join(f"{i}. {r}" for i, r in enumerate(detail["routes"], 1)),
+                    unblock=detail["unblock"]),
+                f"claim{claim}_blocked", "Why this claim is blocked"))
 
         body.append(_cell("## Contract evaluation\n\n" + _checks_table(result),
                           f"claim{claim}_checks", "Contract evaluation"))
