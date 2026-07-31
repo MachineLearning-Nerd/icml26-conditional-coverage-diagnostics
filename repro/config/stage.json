@@ -1,6 +1,3 @@
-{
-  "stages": ["smoke"],
-  "params": {
-    "smoke": {"n_points": 3000, "methods": ["PartitionWise", "XT"]}
-  }
-}
+{"stages": ["claim6_algorithm1"],
+ "params": {"claim6_algorithm1": {"seeds": [0,1,2,3,4], "sizes": [2000, 10000, 50000],
+            "method": "CheapBetterLGBMClassifier"}}}
