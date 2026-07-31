@@ -1,6 +1,3 @@
-{
-  "stages": ["smoke"],
-  "params": {
-    "smoke": {"n_points": 3000, "methods": ["PartitionWise", "XT"]}
-  }
-}
+{"stages": ["claim2_table2"],
+ "params": {"claim2_table2": {"datasets": ["superconductivity"], "experiments": [0],
+            "methods": ["TabPFN", "tabICL"]}}}
