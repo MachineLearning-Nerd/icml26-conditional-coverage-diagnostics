@@ -18,6 +18,16 @@ from covmetrics.losses import (
     logloss, logloss_over, logloss_under,
 )
 
+_FOLD_DATA: tuple | None = None
+
+
+def fold_data():
+    """The (x, cover) pair a forked fold worker should read instead of receiving."""
+    if _FOLD_DATA is None:
+        raise RuntimeError("fold data is only available inside a forked fold worker")
+    return _FOLD_DATA
+
+
 ALL_LOSSES = (
     brier_score, logloss, L1_miscoverage,
     brier_score_over, L1_miscoverage_over, logloss_over,
@@ -132,17 +142,27 @@ def ert_pinned_parallel(fit_predict, x, cover, alpha=0.1, n_splits=5, random_sta
     dominate the cost by orders of magnitude, and a 64-vCPU box cannot use that
     width inside a 32-row batch.
     """
+    import multiprocessing as mp
     from concurrent.futures import ProcessPoolExecutor
 
     from covmetrics.ERT import evaluate_with_predictions
 
-    x = np.asarray(x, dtype=np.float64)
+    x = np.asarray(x, dtype=np.float32)
     cover = np.asarray(cover, dtype=np.int64)
     folds = list(KFold(n_splits=n_splits, shuffle=True, random_state=random_state).split(x))
 
-    jobs = [(x[train], cover[train], x[test]) for train, test in folds]
-    with ProcessPoolExecutor(max_workers=min(workers, len(jobs))) as pool:
-        predictions = list(pool.map(fit_predict, jobs))
+    # Image covariates run to hundreds of megabytes, and shipping a copy of the
+    # fit and score matrices to each worker costs more than the fits.  The data
+    # is published to a module global first and the workers are forked from it,
+    # so only the fold indices cross the process boundary.
+    global _FOLD_DATA
+    _FOLD_DATA = (x, cover)
+    try:
+        context = mp.get_context("fork")
+        with ProcessPoolExecutor(max_workers=min(workers, len(folds)), mp_context=context) as pool:
+            predictions = list(pool.map(fit_predict, folds))
+    finally:
+        _FOLD_DATA = None
 
     values = {f"ERT_{loss.__name__}": [] for loss in ALL_LOSSES}
     for (_, test), prediction in zip(folds, predictions):

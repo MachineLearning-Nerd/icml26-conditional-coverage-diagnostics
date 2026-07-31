@@ -1,15 +1,15 @@
 """Build the evaluator-visible candidate Space tree.
 
-    uv run --frozen python -m repro.publish.build_space --judged <dir> --out space
+    uv run --frozen python -m repro.publish.build_space --judged <judged-dir> --out space
 
 The evaluator sees only what is reachable from the canonical entrypoint, so
-every number, command, code excerpt, checker output and control output that a
-claim rests on is written *inline* on that claim's page, with the raw artifact
-linked beside it as a downloadable file in the same tree.
+every number, command, code excerpt, checker output and control output a claim
+rests on is written inline on that claim's page, with the raw artifact linked
+beside it as a file in the same tree.
 
-Nothing from the judged revision is dropped: the judged tree is copied in
-first, its verification page is relabelled as superseded, and new pages are
-added around it.  `--judged` therefore doubles as the subset guarantee.
+The judged revision is copied in first and never edited except to add a
+supersession banner above its verification page, so the judged file set is a
+subset of the candidate file set by construction; `--check-subset` proves it.
 """
 
 from __future__ import annotations
@@ -20,84 +20,31 @@ from pathlib import Path
 import shutil
 import sys
 
-REQUIRED_ROWS = (
-    "Exact claim and source quantifiers",
-    "Assumptions and their numerical audit",
-    "Executable source code",
-    "Exact command and pinned environment",
-    "Raw numerical results inline",
-    "Downloadable raw CSV/JSON",
-    "Independent checker output",
-    "Negative-control output",
-    "Limitations and deviations",
-    "Git SHA, seeds, CPU and runtime",
-    "Verifier that exits non-zero on failure",
-)
-
-
-def read(path: Path) -> dict:
-    return json.loads(path.read_text())
-
-
-def code_excerpt(path: Path, start: int, end: int, language: str = "python") -> str:
-    lines = path.read_text().splitlines()[start - 1:end]
-    return f"````{language} title={path.name}:{start}-{end}\n" + "\n".join(lines) + "\n````"
-
-
-def whole_file(path: Path, language: str = "python") -> str:
-    return f"````{language} title={path.name}\n{path.read_text().rstrip()}\n````"
-
-
-def checks_table(result: dict) -> str:
-    rows = ["| Check | Result | Observed | Required |", "| --- | --- | --- | --- |"]
-    for check in result["checks"]:
-        observed = check["observed"]
-        if isinstance(observed, list):
-            observed = ", ".join(f"{v:+.5f}" if isinstance(v, float) else str(v) for v in observed)
-        elif isinstance(observed, float):
-            observed = f"{observed:+.6f}"
-        rows.append(f"| `{check['name']}` | {'PASS' if check['passed'] else '**FAIL**'} "
-                    f"| {observed} | {check['required']} |")
-    return "\n".join(rows)
-
-
-def cell(text: str, block_id: str, title: str, extra: str = "") -> str:
-    meta = {"type": "markdown", "id": block_id, "title": title}
-    if extra:
-        meta["subtitle"] = extra
-    return ("\n---\n<!-- trackio-cell\n" + json.dumps(meta) + "\n-->\n" + text + "\n")
+from .pages import PAGE_DESCRIPTIONS, write_pages
 
 
 def build_index(pages: list[tuple[str, str]]) -> str:
     lines = ["# Repro - Conditional Coverage Diagnostics for Conformal Prediction", "",
-             "Claim-by-claim CPU-only reproduction of arXiv `2512.11779` "
-             "(OpenReview `vaApZm6MKM`).", "",
-             "**Start here: [Current verification](#/current-verification).** It carries the "
-             "claim table, the visibility matrix and links to every per-claim page.", "",
+             "Claim-by-claim CPU-only reproduction of *Conditional Coverage Diagnostics for "
+             "Conformal Prediction* (arXiv `2512.11779`, OpenReview `vaApZm6MKM`).", "",
+             "**Start here: [Current verification](#/current-verification)** - the claim table, "
+             "the visibility matrix, the exact command and the pinned environment.", "",
              "| Page | What is on it |", "| --- | --- |"]
-    lines.extend(f"| [{title}](#/{slug}) | {note} |" for slug, title, note in PAGE_NOTES(pages))
+    for slug, title in pages:
+        lines.append(f"| [{title}](#/{slug}) | {PAGE_DESCRIPTIONS.get(slug, '')} |")
     return "\n".join(lines) + "\n"
 
 
-def PAGE_NOTES(pages):  # noqa: N802 - small helper kept next to its only caller
-    for slug, title in pages:
-        yield slug, title, PAGE_DESCRIPTIONS.get(slug, "")
+def subset_report(judged: Path, candidate: Path) -> dict:
+    def relative_files(root: Path) -> set[str]:
+        return {str(p.relative_to(root)) for p in root.rglob("*")
+                if p.is_file() and ".cache" not in p.parts and ".git" not in p.parts}
 
-
-PAGE_DESCRIPTIONS = {
-    "current-verification": "Current claim table, visibility matrix, exact command, environment",
-    "claim-1": "Constant-target principle: exhaustive population sweep plus full-scale arm",
-    "claim-2": "Table-2 relative-power percentages for LightGBM and PartitionWise",
-    "claim-3": "CovGap versus L1-ERT convergence at 5,000 test points",
-    "claim-4": "Asymmetric over/under-coverage decomposition",
-    "claim-5": "Table-4 classification KL+/KL- decomposition",
-    "claim-6": "Algorithm 1 cross-validation and its overfitting control",
-    "raw-evidence": "Every raw JSON artifact, downloadable",
-    "reproduce": "How to re-run everything from scratch",
-    "overview": "Original overview cell from the judged revision",
-    "results": "Original results cell from the judged revision",
-    "verification": "Historical rejected baseline - the superseded five-claim gate",
-}
+    old, new = relative_files(judged), relative_files(candidate)
+    missing = sorted(old - new)
+    return {"judged_files": len(old), "candidate_files": len(new),
+            "judged_is_subset": not missing, "missing": missing,
+            "added": sorted(new - old)}
 
 
 def main() -> int:
@@ -109,30 +56,26 @@ def main() -> int:
 
     if args.out.exists():
         shutil.rmtree(args.out)
-    shutil.copytree(args.judged, args.out, ignore=shutil.ignore_patterns(".cache", ".git"))
+    shutil.copytree(args.judged, args.out, ignore=shutil.ignore_patterns(".cache", ".git*"))
+    shutil.copy2(args.judged / ".gitattributes", args.out / ".gitattributes")
 
-    from .pages import write_pages
     pages = write_pages(args.out, args.artifacts)
 
-    logbook = read(args.out / "logbook.json")
+    logbook = json.loads((args.out / "logbook.json").read_text())
     existing = {child["slug"]: child for child in logbook["root"]["children"]}
-    children = []
-    for slug, title in pages:
-        children.append({"slug": slug, "title": title,
-                         "file": f"pages/{slug}/page.md", "children": []})
-    for slug, child in existing.items():
-        if slug not in {s for s, _ in pages}:
-            children.append(child)
+    new_slugs = {slug for slug, _ in pages}
+    children = [{"slug": slug, "title": title, "file": f"pages/{slug}/page.md", "children": []}
+                for slug, title in pages]
+    ordered_existing = [(slug, existing[slug]["title"]) for slug in existing
+                        if slug not in new_slugs]
+    children += [existing[slug] for slug, _ in ordered_existing]
     logbook["root"]["children"] = children
-    logbook["root"]["file"] = "pages/index.md"
     (args.out / "logbook.json").write_text(json.dumps(logbook, indent=2) + "\n")
-    (args.out / "pages/index.md").write_text(build_index(
-        pages + [(s, existing[s]["title"]) for s in existing if s not in {p for p, _ in pages}]))
+    (args.out / "pages/index.md").write_text(build_index(pages + ordered_existing))
 
-    print(json.dumps({"pages": [s for s, _ in pages],
-                      "files": sorted(str(p.relative_to(args.out))
-                                      for p in args.out.rglob("*") if p.is_file())}, indent=2))
-    return 0
+    report = subset_report(args.judged, args.out)
+    print(json.dumps(report, indent=2))
+    return 0 if report["judged_is_subset"] else 1
 
 
 if __name__ == "__main__":
