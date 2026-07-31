@@ -1,4 +1,4 @@
 {"stages": ["claim2_table2"],
- "params": {"claim2_table2": {"datasets": ["physiochemical_protein"], "experiments": [0,1,2,3,4,5,6,7,8,9],
+ "params": {"claim2_table2": {"datasets": ["physiochemical_protein"], "experiments": [0,1,2,3,4],
             "methods": ["CheapBetterLGBMClassifier", "BetterCatBoost", "RF", "XT", "PartitionWise", "TabPFN", "tabICL"],
             "experiment_workers": 5}}}
