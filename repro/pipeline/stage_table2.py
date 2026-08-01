@@ -102,17 +102,24 @@ class _Experiment:
     difference between a job that fits its timeout and one that does not.
     Threads stay capped inside each worker so the total stays near the core
     count.
+
+    The encoded design matrix travels with the worker rather than being read
+    from a shared global, because the workers are spawned rather than forked:
+    RealMLP trains under torch, and torch refuses to run autograd in a
+    fork-based child, deadlocking instead of failing.  A few megabytes of
+    pickle per worker is a small price for a process that starts clean.
     """
 
-    def __init__(self, dataset: str, methods: list[str], size_limit, threads: int):
-        self.dataset, self.methods, self.size_limit, self.threads = \
-            dataset, methods, size_limit, threads
+    def __init__(self, dataset: str, features, targets, methods: list[str],
+                 size_limit, threads: int):
+        self.dataset, self.features, self.targets = dataset, features, targets
+        self.methods, self.size_limit, self.threads = methods, size_limit, threads
 
     def __call__(self, experiment: int) -> list[dict]:
         import torch
         torch.set_num_threads(self.threads)
 
-        features, targets = _DATASET_CACHE[self.dataset]
+        features, targets = self.features, self.targets
         np.random.seed(experiment)
         fitted = split_and_conformalize(features, targets, experiment)
         note(f"table2 {self.dataset} exp={experiment} split="
@@ -145,9 +152,6 @@ class _Experiment:
         return records
 
 
-_DATASET_CACHE: dict[str, tuple] = {}
-
-
 def run(config: dict) -> dict:
     import multiprocessing as mp
     from concurrent.futures import ProcessPoolExecutor
@@ -166,14 +170,13 @@ def run(config: dict) -> dict:
         integrity[name] = loaded["integrity"]
         note(f"table2 dataset={name} {loaded['integrity']['rows']} rows "
              f"(Appendix H {loaded['integrity']['appendix_h_rows']})")
-        _DATASET_CACHE[name] = (data.encode(loaded["x"]), loaded["y"].to_numpy())
-
-        worker = _Experiment(name, methods, size_limit, threads)
+        worker = _Experiment(name, data.encode(loaded["x"]), loaded["y"].to_numpy(),
+                             methods, size_limit, threads)
         if workers <= 1:
             for experiment in experiments:
                 rows.extend(worker(experiment))
         else:
-            context = mp.get_context("fork")
+            context = mp.get_context("spawn")
             with ProcessPoolExecutor(max_workers=min(workers, len(experiments)),
                                      mp_context=context) as pool:
                 for records in pool.map(worker, experiments):
