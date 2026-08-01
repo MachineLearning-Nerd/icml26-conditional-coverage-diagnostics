@@ -1,3 +1,4 @@
 {"stages": ["claim2_table2"],
- "params": {"claim2_table2": {"datasets": ["superconductivity"], "experiments": [0],
-            "methods": ["TabPFN", "tabICL"], "experiment_workers": 1}}}
+ "params": {"claim2_table2": {"datasets": ["superconductivity"], "experiments": [0,1],
+            "methods": ["PartitionWise"], "experiment_workers": 2,
+            "max_test_size": 300}}}
