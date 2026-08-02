@@ -1,0 +1,37 @@
+{
+  "banked_claims_byte_identical": true,
+  "baseline_nodes_retained": 12,
+  "baseline_paths_retained": 28,
+  "canonical_prefix": [
+    "executive-summary",
+    "claim-1",
+    "claim-2",
+    "claim-3",
+    "claim-4",
+    "claim-5",
+    "claim-6"
+  ],
+  "conclusion_last": true,
+  "downloaded_paths_verified": 17,
+  "final_nodes": 14,
+  "final_paths": 37,
+  "published_paths": [
+    "GATE_READY.md",
+    "docs/CAMPAIGN_AUDIT.md",
+    "logbook.json",
+    "outputs/claim6_independent_audit.json",
+    "outputs/publication_manifest.json",
+    "pages/claim-2/page.md",
+    "pages/claim-5/page.md",
+    "pages/claim-6/page.md",
+    "pages/conclusion/page.md",
+    "pages/executive-summary/page.md",
+    "pages/index.md",
+    "poster_embed.html",
+    "repro/src/audit_claim6.py",
+    "repro/src/publication_gate.py"
+  ],
+  "release_paths_byte_identical": 14,
+  "space_id": "DineshAI/vaApZm6MKM",
+  "verified_revision": "d65e29ad312cc59e96fcb313a78caa80d505a0ed"
+}

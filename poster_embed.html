@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- Reproduction poster based on Chenruishuo/posterly, commit f27eedbb54598aa31e48ba12b653bc06aed8c6cf. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<meta name="generator" content="posterly">
+<title>Conditional coverage diagnostics — ICML 2026 reproduction</title>
+<style>
+@page { size: 60in 36in; margin: 0; }
+:root { --ink:#17213b; --navy:#173f64; --blue:#246b98; --cyan:#dff4f4; --gold:#d08a24; --cream:#fffaf0; --paper:#fff; --line:#bfd0dd; --muted:#526477; }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--ink); background:var(--cyan); font-family:Inter,"Source Sans 3",Arial,sans-serif; }
+.poster { min-height:620px; padding:30px 36px 27px; border-top:14px solid var(--navy); background:var(--paper); }
+.eyebrow { color:var(--blue); font-size:13px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+h1 { max-width:1120px; margin:9px 0 7px; font-size:36px; line-height:1.04; }
+.subtitle { margin:0; color:var(--muted); font-size:17px; line-height:1.35; }
+.metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:22px 0 16px; }
+.metric { min-height:91px; padding:15px 17px; color:var(--paper); background:var(--navy); border-bottom:5px solid var(--gold); border-radius:9px; font-size:13px; line-height:1.3; }
+.metric b { display:block; margin-bottom:3px; font-size:26px; line-height:1.05; }
+.cards { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; }
+.card { min-height:180px; padding:17px 18px; color:var(--ink); background:var(--cream); border:1px solid var(--line); border-radius:9px; text-decoration:none; line-height:1.42; }
+.card strong { display:block; margin-bottom:7px; color:var(--navy); font-size:18px; line-height:1.15; }
+.card em { color:var(--blue); font-style:normal; font-weight:800; }
+.pill { display:inline-block; margin-top:10px; padding:5px 9px; color:var(--navy); background:var(--cyan); border-radius:99px; font-size:11px; font-weight:800; }
+.foot { margin-top:18px; color:var(--muted); font-size:12px; line-height:1.35; }
+@media (max-width:850px) { .metrics { grid-template-columns:repeat(2,1fr); } .cards { grid-template-columns:1fr; } h1 { font-size:29px; } }
+</style>
+</head>
+<body>
+<main class="poster" data-measure-role="poster" data-ps-identity="off">
+  <div class="eyebrow">ICML 2026 · CPU reproduction · Algorithm 1</div>
+  <h1>Cross-fitting removes a false conditional-coverage violation</h1>
+  <p class="subtitle">Five seeds, three scales, four fold counts, an exact partition audit, and a no-cross-validation control make the anti-overfitting mechanism directly visible.</p>
+  <section class="metrics" aria-label="headline results">
+    <div class="metric"><b>270</b>recorded summary fields independently recomputed</div>
+    <div class="metric"><b>12 / 12</b>cross-fitted size/fold cells below |0.01|</div>
+    <div class="metric"><b>0.09735</b>largest no-CV inflation, observed at n=10,000</div>
+    <div class="metric"><b>3 / 3</b>deliberately broken checker controls rejected</div>
+  </section>
+  <section class="cards">
+    <a class="card" data-logbook-target="claim-6">
+      <strong>Partitions match exactly</strong>
+      Five recorded test folds equal an independent seeded KFold split, are disjoint, cover every row, and never score a training row.
+      <span class="pill">Claim 6 · partition audit ↗</span>
+    </a>
+    <a class="card" data-logbook-target="claim-6">
+      <strong>The negative control fails</strong>
+      Fitting and scoring the same rows creates <em>0.0407–0.0974</em> spurious L1-ERT even though the oracle truth is exactly zero.
+      <span class="pill">Claim 6 · no-CV control ↗</span>
+    </a>
+    <a class="card" data-logbook-target="claim-6">
+      <strong>Cross-fitting repairs it</strong>
+      Every k in {2,3,5,10} stays below <em>|0.01|</em> at all three scales and improves by more than fivefold.
+      <span class="pill">Claim 6 · five-seed result ↗</span>
+    </a>
+  </section>
+  <div class="foot">OpenReview vaApZm6MKM · seeds 0–4 · n=2,000/10,000/50,000 · 161.9 s full CPU stage · no GPU · Claims 2 and 5 remain honestly blocked by &gt;2h CPU · poster workflow: Chenruishuo/posterly.</div>
+</main>
+</body>
+</html>

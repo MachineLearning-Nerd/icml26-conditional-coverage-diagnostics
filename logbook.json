@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "title": "Repro - Conditional Coverage Diagnostics for Conformal Prediction",
+  "emoji": "\ud83c\udfaf",
+  "space_id": "DineshAI/vaApZm6MKM",
+  "paper": null,
+  "tags": [
+    "icml2026-repro",
+    "paper-vaApZm6MKM"
+  ],
+  "updated_at": "2026-08-02T22:01:33+00:00",
+  "root": {
+    "slug": "index",
+    "title": "Repro - Conditional Coverage Diagnostics for Conformal Prediction",
+    "file": "pages/index.md",
+    "children": [
+      {
+        "slug": "executive-summary",
+        "title": "Executive summary",
+        "file": "pages/executive-summary/page.md",
+        "children": []
+      },
+      {
+        "slug": "claim-1",
+        "title": "Claim 1 - constant-target principle",
+        "file": "pages/claim-1/page.md",
+        "children": []
+      },
+      {
+        "slug": "claim-2",
+        "title": "Claim 2 - Table-2 relative power",
+        "file": "pages/claim-2/page.md",
+        "children": []
+      },
+      {
+        "slug": "claim-3",
+        "title": "Claim 3 - CovGap versus L1-ERT convergence",
+        "file": "pages/claim-3/page.md",
+        "children": []
+      },
+      {
+        "slug": "claim-4",
+        "title": "Claim 4 - asymmetric decomposition",
+        "file": "pages/claim-4/page.md",
+        "children": []
+      },
+      {
+        "slug": "claim-5",
+        "title": "Claim 5 - Table-4 classification decomposition",
+        "file": "pages/claim-5/page.md",
+        "children": []
+      },
+      {
+        "slug": "claim-6",
+        "title": "Claim 6 - Algorithm 1 cross-validation",
+        "file": "pages/claim-6/page.md",
+        "children": []
+      },
+      {
+        "slug": "current-verification",
+        "title": "Current verification",
+        "file": "pages/current-verification/page.md",
+        "children": []
+      },
+      {
+        "slug": "raw-evidence",
+        "title": "Raw evidence index",
+        "file": "pages/raw-evidence/page.md",
+        "children": []
+      },
+      {
+        "slug": "reproduce",
+        "title": "How to reproduce",
+        "file": "pages/reproduce/page.md",
+        "children": []
+      },
+      {
+        "slug": "overview",
+        "title": "Overview",
+        "file": "pages/overview/page.md",
+        "children": []
+      },
+      {
+        "slug": "results",
+        "title": "Results",
+        "file": "pages/results/page.md",
+        "children": []
+      },
+      {
+        "slug": "verification",
+        "title": "Verification",
+        "file": "pages/verification/page.md",
+        "children": []
+      },
+      {
+        "slug": "conclusion",
+        "title": "Conclusion",
+        "file": "pages/conclusion/page.md",
+        "children": []
+      }
+    ]
+  },
+  "agent_view_tokens": 665,
+  "revision": "1785399095826490379"
+}

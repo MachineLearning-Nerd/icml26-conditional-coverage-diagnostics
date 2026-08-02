@@ -1,0 +1,3 @@
+ADDITIVE_GATE_READY: vaApZm6MKM
+Claim 6: VERIFIED
+Claims 2 and 5: BLOCKED — >2h CPU

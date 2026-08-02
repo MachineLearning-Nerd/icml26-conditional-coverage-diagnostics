@@ -1,0 +1,71 @@
+{
+  "claim": 6,
+  "input_sha256": "59aeb547948d67117da86f28d3708c572ba296b45594bc3c656f5307e1843852",
+  "l1_ert_means": {
+    "10000": {
+      "kfold_10": 0.0002839999999999985,
+      "kfold_2": 0.004047999999999998,
+      "kfold_3": 0.0016401664161617088,
+      "kfold_5": 0.001651999999999999,
+      "no_cv": 0.09735200000000001
+    },
+    "2000": {
+      "kfold_10": -0.0070199999999999985,
+      "kfold_2": -0.0029,
+      "kfold_3": -0.004521042781912346,
+      "kfold_5": -0.009200000000000002,
+      "no_cv": 0.09728
+    },
+    "50000": {
+      "kfold_10": 0.00018959999999999954,
+      "kfold_2": -0.0005456000000000007,
+      "kfold_3": 0.00034882096069826975,
+      "kfold_5": 0.0008623999999999998,
+      "no_cv": 0.040688
+    }
+  },
+  "negative_controls": [
+    {
+      "control": "reject_nonmatching_partition",
+      "result": "PASS"
+    },
+    {
+      "control": "reject_missing_no_cv_inflation",
+      "result": "PASS"
+    },
+    {
+      "control": "reject_failed_cross_fitting",
+      "result": "PASS"
+    }
+  ],
+  "partition_checks": {
+    "constant_target_all_zero": true,
+    "matches_independent_kfold": true,
+    "test_folds_disjoint_and_complete": true
+  },
+  "protocol": {
+    "construction": "oracle (true ERT is exactly 0)",
+    "fold_counts": [
+      2,
+      3,
+      5,
+      10
+    ],
+    "method": "CheapBetterLGBMClassifier",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "sizes": [
+      2000,
+      10000,
+      50000
+    ]
+  },
+  "schema_version": 1,
+  "summary_values_recomputed": 270,
+  "verdict": "VERIFIED"
+}
