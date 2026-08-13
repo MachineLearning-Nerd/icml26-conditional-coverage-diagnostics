@@ -16,4 +16,4 @@ Claims 2 and 5 are not called successful. Their exact benchmark protocols exceed
 python3 repro/src/audit_claim6.py
 ```
 
-The output is deterministic and matches [the published audit](https://huggingface.co/spaces/DineshAI/vaApZm6MKM/blob/main/outputs/claim6_independent_audit.json). Full-run provenance is the [completed CPU Job](https://huggingface.co/jobs/DineshAI/6a6c481323ed89c748ec92cd) at Git commit `c6f68ec340b9e01a261a02e753666721bf210645`; source and release notes are in the [public repository](https://github.com/MachineLearning-Nerd/icml26-repro-vaApZm6MKM-conditional-coverage-diagnostics).
+The output is deterministic and matches [the published audit](https://huggingface.co/spaces/DineshAI/vaApZm6MKM/blob/main/outputs/claim6_independent_audit.json). Full-run provenance is the [completed CPU Job](https://huggingface.co/jobs/DineshAI/6a6c481323ed89c748ec92cd) at Git commit `c6f68ec340b9e01a261a02e753666721bf210645`; source and release notes are in the [public repository](https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics).

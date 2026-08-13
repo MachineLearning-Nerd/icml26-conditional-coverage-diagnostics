@@ -1,7 +1,15 @@
 # Status
 
-Current step: exact external data provenance is recovered; validate deterministic
-preparation and repair the released benchmark invocation before any run.
+**State: additive audit published — C1, C3, and C4 retain live 2/2 evidence; C6 is verified candidate evidence; C2 and C5 remain blocked by the authorized CPU budget.**
+
+- Paper: [Conditional Coverage Diagnostics for Conformal Prediction](https://arxiv.org/abs/2512.11779), by Sacha Braun, David Holzmüller, Michael I. Jordan, and Francis Bach.
+- Submission identifier: `vaApZm6MKM`.
+- Historical live result: `6/12`; this repository makes no new live score claim.
+- Pinned upstream repositories, source defects, data provenance, and claim quantifiers are recorded in `docs/SOURCE_AUDIT.md`.
+- The five-claim local publication gate passed, with Claim 6 added as an independent CPU audit and Claims 2/5 explicitly blocked.
+
+The historical campaign log follows below. It is retained as provenance rather
+than treated as the current action list.
 
 - Both author repositories are pinned and vendored in `upstream/`.
 - The source contains a CPU path for the core eight-dataset LightGBM benchmark,

@@ -21,6 +21,6 @@ The authors' committed CSV reproduces their reported values within 0.95 percenta
 | Independent four-dataset, ten-repeat result | MISSING |
 | Faithful completion within two CPU hours | FAIL |
 
-Source and attempted-run history are retained in the [public repository](https://github.com/MachineLearning-Nerd/icml26-repro-vaApZm6MKM-conditional-coverage-diagnostics), including the per-dataset Claim-2 branches. A five-method CPU subset is deliberately not presented as the paper's number.
+Source and attempted-run history are retained in the [public repository](https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics), including the per-dataset Claim-2 branches. A five-method CPU subset is deliberately not presented as the paper's number.
 
 Unblock condition: a faithful all-seven-method execution that completes within the permitted compute envelope. Until then the honest score is 0/2.

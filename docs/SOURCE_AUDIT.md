@@ -3,6 +3,22 @@
 Everything the reproduction asserts about the paper traces to one of the
 artefacts below. Nothing is quoted from memory.
 
+## Paper identity
+
+The paper is [Conditional Coverage Diagnostics for Conformal Prediction](https://arxiv.org/abs/2512.11779)
+by Sacha Braun, David Holzmüller, Michael I. Jordan, and Francis Bach. The ICML
+submission identifier used by the evaluator is `vaApZm6MKM`.
+
+```bibtex
+@article{braun2025conditional,
+  title         = {Conditional Coverage Diagnostics for Conformal Prediction},
+  author        = {Braun, Sacha and Holzm{\"u}ller, David and Jordan, Michael I. and Bach, Francis},
+  journal       = {arXiv preprint arXiv:2512.11779},
+  year          = {2025},
+  doi           = {10.48550/arXiv.2512.11779}
+}
+```
+
 ## Paper
 
 | Field | Value |

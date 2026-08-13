@@ -36,8 +36,8 @@ Cross-fitting removes the false violation for every tested fold count and scale.
 
 - [Raw five-seed result](https://huggingface.co/spaces/DineshAI/vaApZm6MKM/blob/main/raw/claim6_algorithm1__raw.json), SHA-256 `59aeb547948d67117da86f28d3708c572ba296b45594bc3c656f5307e1843852`
 - [Independent audit output](https://huggingface.co/spaces/DineshAI/vaApZm6MKM/blob/main/outputs/claim6_independent_audit.json), SHA-256 `2e08d3f03901cd97db882598cbaa2c70dcbf5aa62e930833af8d29ca9127483b`
-- [Independent audit source](https://github.com/MachineLearning-Nerd/icml26-repro-vaApZm6MKM-conditional-coverage-diagnostics/blob/main/repro/src/audit_claim6.py)
-- [Full reproduction source at exact commit](https://github.com/MachineLearning-Nerd/icml26-repro-vaApZm6MKM-conditional-coverage-diagnostics/tree/c6f68ec340b9e01a261a02e753666721bf210645/repro)
+- [Independent audit source](https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics/blob/main/repro/src/audit_claim6.py)
+- [Full reproduction source at the audited Claim-6 branch](https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics/tree/audit/c6-algorithm1-cross-validation/repro)
 - [Completed Hugging Face CPU Job](https://huggingface.co/jobs/DineshAI/6a6c481323ed89c748ec92cd)
 
 ```bash

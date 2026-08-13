@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 import shutil
 
-REPO = "https://github.com/MachineLearning-Nerd/icml26-repro-vaApZm6MKM-conditional-coverage-diagnostics"
+REPO = "https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics"
 
 COMMAND = "bash repro/run.sh"
 VERIFY = "uv run --frozen python -m repro.verify"
@@ -653,7 +653,7 @@ def _write_reproduce(out: Path, provenance: dict) -> None:
              f"Repository: {REPO}", "",
              "```bash",
              "git clone " + REPO + ".git",
-             "cd icml26-repro-vaApZm6MKM-conditional-coverage-diagnostics",
+             "cd icml26-conditional-coverage-diagnostics",
              "",
              "# pick what to run by editing repro/config/stage.json, then:",
              COMMAND,

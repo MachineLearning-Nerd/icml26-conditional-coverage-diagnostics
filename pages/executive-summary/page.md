@@ -4,7 +4,7 @@
 <!-- trackio-cell
 {"type":"markdown","id":"vaap_exec_summary","created_at":"2026-08-02T22:01:31+00:00","title":"Executive summary","pinned":true,"pinned_at":"2026-08-02T22:01:31+00:00"}
 -->
-This CPU-only reproduction preserves the live-judged Claim 1, 3, and 4 evidence byte-for-byte. It adds a concise, independent audit for Claim 6: the recorded folds exactly match independent k-fold partitions, and cross-fitting removes a large spurious ERT violation for five seeds, three sample sizes, and every `k` in `{2,3,5,10}`.
+This CPU-only reproduction of [Conditional Coverage Diagnostics for Conformal Prediction](https://arxiv.org/abs/2512.11779) by Sacha Braun, David Holzmüller, Michael I. Jordan, and Francis Bach preserves the live-judged Claim 1, 3, and 4 evidence byte-for-byte. It adds a concise, independent audit for Claim 6: the recorded folds exactly match independent k-fold partitions, and cross-fitting removes a large spurious ERT violation for five seeds, three sample sizes, and every `k` in `{2,3,5,10}`.
 
 Claims 2 and 5 remain explicitly blocked rather than overstated. Their literal protocols exceed the two-hour CPU ceiling: Claim 2 needs all seven methods in its normalization, and Claim 5's CIFAR10 predictor fits alone took 8,233–9,812 seconds before any ERT cell completed.
 
@@ -21,7 +21,7 @@ Claims 2 and 5 remain explicitly blocked rather than overstated. Their literal p
 | Cost | Existing CPU Job; no new paid compute | USD 0 for this repair cycle |
 | Blockers | Claims 2 and 5: `>2h CPU` | Full benchmark/image protocols |
 
-Evidence: [Claim 6 raw result](https://huggingface.co/spaces/DineshAI/vaApZm6MKM/blob/main/raw/claim6_algorithm1__raw.json), [independent audit](https://huggingface.co/spaces/DineshAI/vaApZm6MKM/blob/main/outputs/claim6_independent_audit.json), [completed CPU Job](https://huggingface.co/jobs/DineshAI/6a6c481323ed89c748ec92cd), and [public GitHub repository](https://github.com/MachineLearning-Nerd/icml26-repro-vaApZm6MKM-conditional-coverage-diagnostics).
+Evidence: [Claim 6 raw result](https://huggingface.co/spaces/DineshAI/vaApZm6MKM/blob/main/raw/claim6_algorithm1__raw.json), [independent audit](https://huggingface.co/spaces/DineshAI/vaApZm6MKM/blob/main/outputs/claim6_independent_audit.json), [completed CPU Job](https://huggingface.co/jobs/DineshAI/6a6c481323ed89c748ec92cd), and [public GitHub repository](https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics).
 
 ---
 <!-- trackio-cell
