@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "paper": "Conditional Coverage Diagnostics for Conformal Prediction",
+  "arxiv": "2512.11779",
+  "submission": "vaApZm6MKM",
+  "phase": "scoped_audit_published_claim6_candidate_c2_c5_compute_blocked",
+  "overall_status": "PARTIAL_C1_C3_C4_LIVE_VERIFIED_C6_CPU_VERIFIED_C2_C5_BLOCKED_HISTORICAL_SCORE_6_OF_12_NO_CURRENT_SCORE",
+  "next_action": "Preserve the current evidence; only resume Claims 2 or 5 with an explicitly authorized CPU-upgrade budget, or wait for a fresh external evaluator. Do not convert reduced runs into paper claims.",
+  "current_score_claim": false,
+  "publication_allowed": false,
+  "author_endorsement_claimed": false,
+  "claim6": {
+    "status": "VERIFIED_SCOPED_CANDIDATE",
+    "summary_values_recomputed": 270,
+    "negative_controls_rejected": 3,
+    "audit_sha256": "2e08d3f03901cd97db882598cbaa2c70dcbf5aa62e930833af8d29ca9127483b"
+  },
+  "historical_external_result": {
+    "score": "6/12",
+    "banked_claims": ["C1", "C3", "C4"],
+    "fresh_score_pending": true
+  },
+  "source": {
+    "html_sha256": "1e13e76905dab485726ab80b671ca7140c73e58cdc6001832379f4a349da5a03",
+    "experiments_commit": "39a99dcad92205a15d93f2c5fec40c76540abf1c",
+    "covmetrics_commit": "a5205aada6a0f39e3812daf087753217ef66b159"
+  },
+  "repository": {
+    "owner": "MachineLearning-Nerd",
+    "canonical_email": "MachineLearning-Nerd@users.noreply.github.com",
+    "github": "https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics",
+    "recovery_bundle_sha256": "bae68cdf6e4f3301e20dd4cbb5ebfba5ed578e073f6f9ea71525eddb5ca4a543"
+  }
+}

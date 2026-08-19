@@ -2,6 +2,20 @@
 
 **State: additive audit published — C1, C3, and C4 retain live 2/2 evidence; C6 is verified candidate evidence; C2 and C5 remain blocked by the authorized CPU budget.**
 
+## Current canonical snapshot
+
+- Overall: `PARTIAL_C1_C3_C4_LIVE_VERIFIED_C6_CPU_VERIFIED_C2_C5_BLOCKED_HISTORICAL_SCORE_6_OF_12_NO_CURRENT_SCORE`.
+- Historical live result: `6/12`; no current score increase or forecast is claimed.
+- Claims 1, 3, and 4 retain the evaluator's live `2/2` evidence; Claim 6 is a separate CPU candidate audit with an independent checker.
+- Claims 2 and 5 are `BLOCKED — >2h CPU`: reduced subsets and predictor-only outputs are intentionally excluded from the paper claims.
+- The additive local publication gate passes, but `publication_allowed=false` until a fresh external evaluation is recorded.
+- `official_author_endorsement=false`; this is an independent reproduction audit maintained by MachineLearning-Nerd.
+- Branches: 23 descriptive refs including `main`; all reachable pre-dossier commits use `MachineLearning-Nerd <MachineLearning-Nerd@users.noreply.github.com>`.
+- Recovery bundle SHA-256: `bae68cdf6e4f3301e20dd4cbb5ebfba5ed578e073f6f9ea71525eddb5ca4a543`.
+
+The dated campaign notes below are retained as provenance. They do not override
+the current claim statuses above and do not constitute a new live score.
+
 - Paper: [Conditional Coverage Diagnostics for Conformal Prediction](https://arxiv.org/abs/2512.11779), by Sacha Braun, David Holzmüller, Michael I. Jordan, and Francis Bach.
 - Submission identifier: `vaApZm6MKM`.
 - Historical live result: `6/12`; this repository makes no new live score claim.

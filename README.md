@@ -12,6 +12,15 @@ for Conformal Prediction](https://arxiv.org/abs/2512.11779).
 | Historical live result | `6/12` from Claims 1, 3, and 4; no new live score is claimed |
 | Current local status | Claim 6 `VERIFIED`; Claims 2 and 5 `BLOCKED — >2h CPU` |
 
+## Audit record
+
+- Overall status: `PARTIAL_C1_C3_C4_LIVE_VERIFIED_C6_CPU_VERIFIED_C2_C5_BLOCKED_HISTORICAL_SCORE_6_OF_12_NO_CURRENT_SCORE`
+- Current score claim: none; `6/12` is historical evaluator context only.
+- Publication gate: local additive gate passed; publication and author endorsement are not claimed.
+- Branch contract: 23 descriptive branches including `main`; no public `orx/*` branch remains.
+- History: all 174 reachable pre-dossier commits use `MachineLearning-Nerd <MachineLearning-Nerd@users.noreply.github.com>`.
+- Canonical machine-checkable records: [claims.json](claims.json), [reproduction_verdicts.json](reproduction_verdicts.json), [EVIDENCE_MANIFEST.json](EVIDENCE_MANIFEST.json), and [verify_final.py](verify_final.py).
+
 ## What the paper does
 
 The paper reframes conditional-coverage diagnosis as a classification problem.

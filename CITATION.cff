@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+title: "Independent reproduction audit of Conditional Coverage Diagnostics for Conformal Prediction"
+message: "If this audit package is useful, please cite the original paper and this repository."
+type: software
+authors:
+  - family-names: Jinjala
+    given-names: Dinesh
+    affiliation: MachineLearning-Nerd
+    email: MachineLearning-Nerd@users.noreply.github.com
+repository-code: https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics
+url: https://github.com/MachineLearning-Nerd/icml26-conditional-coverage-diagnostics
+version: 2026.08.19
+date-released: 2026-08-19
+license: MIT
+keywords:
+  - conformal prediction
+  - conditional coverage
+  - reproduction audit
+  - ERT
+references:
+  - type: article
+    title: "Conditional Coverage Diagnostics for Conformal Prediction"
+    authors:
+      - family-names: Braun
+        given-names: Sacha
+      - family-names: Holzmüller
+        given-names: David
+      - family-names: Jordan
+        given-names: "Michael I."
+      - family-names: Bach
+        given-names: Francis
+    year: 2025
+    url: https://arxiv.org/abs/2512.11779
+    doi: 10.48550/arXiv.2512.11779

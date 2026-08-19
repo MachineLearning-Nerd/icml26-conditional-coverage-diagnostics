@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "paper": {
+    "title": "Conditional Coverage Diagnostics for Conformal Prediction",
+    "arxiv": "2512.11779",
+    "submission": "vaApZm6MKM",
+    "source_version": "arXiv v1",
+    "authors": ["Sacha Braun", "David Holzmüller", "Michael I. Jordan", "Francis Bach"]
+  },
+  "overall_status": "PARTIAL_C1_C3_C4_LIVE_VERIFIED_C6_CPU_VERIFIED_C2_C5_BLOCKED_HISTORICAL_SCORE_6_OF_12_NO_CURRENT_SCORE",
+  "claims": [
+    {
+      "id": "C1",
+      "name": "constant_target_population_principle",
+      "status": "VERIFIED_SCOPED_LIVE",
+      "paper_anchor": "Section 3.1, Table 1, and the sentence supporting Algorithm 1",
+      "production": ["repro/pipeline/stage_principle.py", "repro/verify/claims.py", "repro/contracts/claim1.json"],
+      "controls": ["exact conditional-coverage construction", "proper-loss closed forms", "conditionally invalid negative control"],
+      "scope": "Source-faithful population and finite classifier checks retain the live evaluator evidence; the universal theorem remains supported by the paper proof."
+    },
+    {
+      "id": "C2",
+      "name": "table2_relative_l1_ert_power",
+      "status": "BLOCKED_COMPUTE",
+      "paper_anchor": "Table 2, Section 4.1, Appendix H Table 5",
+      "production": ["repro/src/aggregate_cpu_comparator_claim.py", "repro/pipeline/data.py", "repro/contracts/claim2.json"],
+      "controls": ["full seven-method denominator is required", "reduced subsets are excluded"],
+      "scope": "The literal four-dataset, seven-method, ten-repeat, ten-size protocol exceeds the authorized two-hour CPU envelope; this is neither verification nor falsification."
+    },
+    {
+      "id": "C3",
+      "name": "synthetic_ert_convergence_comparison",
+      "status": "VERIFIED_SCOPED_LIVE",
+      "paper_anchor": "Figure 4, Section 4.2",
+      "production": ["repro/pipeline/stage_convergence.py", "repro/src/aggregate_synthetic_convergence.py", "repro/contracts/claim3.json"],
+      "controls": ["ten-seed aggregate", "standard versus oracle construction", "release-versus-caption sigma discrepancy recorded"],
+      "scope": "The released finite synthetic sweep retains the live evidence; it does not establish a universal convergence theorem."
+    },
+    {
+      "id": "C4",
+      "name": "asymmetric_ert_decomposition",
+      "status": "VERIFIED_SCOPED_LIVE",
+      "paper_anchor": "Section 3.3",
+      "production": ["repro/pipeline/stage_decomposition.py", "repro/pipeline/metrics.py", "repro/contracts/claim4.json"],
+      "controls": ["additivity", "conservative construction", "aggressive construction", "exact conditional control"],
+      "scope": "Finite source-faithful constructions and proper-score checks retain the live evidence."
+    },
+    {
+      "id": "C5",
+      "name": "classification_ert_decomposition",
+      "status": "BLOCKED_COMPUTE",
+      "paper_anchor": "Table 4, Section 4.3.2",
+      "production": ["repro/pipeline/stage_table4.py", "repro/contracts/claim5.json", "audit/c5-mnist"],
+      "controls": ["predictor-only outputs are excluded", "complete ERT cells are required"],
+      "scope": "The literal four-dataset, two-strategy, ten-repeat, five-fold protocol exceeds the authorized CPU envelope; this is neither verification nor falsification."
+    },
+    {
+      "id": "C6",
+      "name": "algorithm1_cross_fitted_ert",
+      "status": "VERIFIED_SCOPED_CANDIDATE",
+      "paper_anchor": "Algorithm 1",
+      "production": ["repro/src/audit_claim6.py", "outputs/claim6_independent_audit.json", "repro/contracts/claim6.json"],
+      "controls": ["independent KFold partition", "no-CV inflation", "cross-fitting reduction", "three rejecting mutations"],
+      "scope": "Five-seed CPU candidate evidence; the local audit cannot bank a new evaluator score."
+    }
+  ]
+}
